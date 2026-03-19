@@ -3,11 +3,24 @@ const supabase = require('../config/supabaseClient');
 const authMiddleware = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Missing or invalid Authorization header' });
+  if (!authHeader) {
+    return res.status(401).json({ error: 'Missing Authorization header' });
   }
 
-  const token = authHeader.split(' ')[1];
+  // Handle both 'Bearer <token>' and cases where the user accidentally includes 'Bearer ' twice
+  let token = authHeader;
+  if (authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7).trim();
+    if (token.startsWith('Bearer ')) {
+      token = token.substring(7).trim();
+    }
+  } else {
+    return res.status(401).json({ error: 'Authorization header must start with Bearer' });
+  }
+
+  if (!token) {
+    return res.status(401).json({ error: 'Token is missing' });
+  }
 
   try {
     const { data: { user }, error } = await supabase.auth.getUser(token);

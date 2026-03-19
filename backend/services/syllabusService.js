@@ -2,7 +2,7 @@ const supabase = require('../config/supabaseClient');
 const { parsePDF } = require('../utils/fileParser');
 const { extractTopics } = require('./aiService');
 
-const createSyllabus = async (userId, syllabusData) => {
+const createSyllabusService = async (userId, syllabusData) => {
   const { title, description, content, file } = syllabusData;
   let finalContent = content || '';
 
@@ -46,5 +46,5 @@ const createSyllabus = async (userId, syllabusData) => {
 };
 
 module.exports = {
-  createSyllabus
+  createSyllabus: createSyllabusService
 };

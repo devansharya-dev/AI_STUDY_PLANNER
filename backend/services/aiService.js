@@ -1,41 +1,61 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
+if (!process.env.GEMINI_API_KEY) {
+  throw new Error("GEMINI_API_KEY is missing");
+}
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-const extractTopics = async (syllabusText) => {
+async function extractTopics(syllabusText) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+    });
 
     const prompt = `
-Convert the following syllabus into a clean JSON list of topics.
+Extract topics from the syllabus below.
 
-Syllabus:
-${syllabusText}
+STRICT RULES:
+- Return ONLY valid JSON
+- No explanation
+- No extra text
+- No markdown
 
-Return ONLY valid JSON in this format:
+FORMAT:
 {
-  "topics": ["topic1", "topic2", "topic3"]
+  "topics": ["topic1", "topic2"]
 }
-`
 
-    const result = await model.generateContent(prompt)
-    const response = await result.response.text()
+SYLLABUS:
+${syllabusText}
+`;
 
-    // Clean response (remove markdown if any)
-    const cleaned = response
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim()
+    const result = await model.generateContent(prompt);
+    const raw = result.response.text();
 
-    const parsed = JSON.parse(cleaned)
+    const jsonStart = raw.indexOf("{");
+    const jsonEnd = raw.lastIndexOf("}");
 
-    return parsed.topics || []
+    if (jsonStart === -1 || jsonEnd === -1) {
+      console.error("No JSON found:", raw);
+      return [];
+    }
+
+    const cleaned = raw.substring(jsonStart, jsonEnd + 1);
+
+    let parsed;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch (err) {
+      console.error("JSON parse failed:", cleaned);
+      return [];
+    }
+
+    return Array.isArray(parsed.topics) ? parsed.topics : [];
   } catch (error) {
-    console.error("AI Extraction Error:", error)
-    return []
+    console.error("AI ERROR:", error.message);
+    return [];
   }
-};
+}
 
-module.exports = {
-  extractTopics
-};
+module.exports = extractTopics;

@@ -7,10 +7,9 @@ const generateStudyPlan = async (userId, syllabusId, planData) => {
   const { data: topics, error: topicsError } = await supabase
     .from('topics')
     .select('*')
-    .eq('syllabus_id', syllabusId)
-    .eq('user_id', userId);
+    .eq('syllabus_id', syllabusId);
 
-  if (topicsError || !topics.length) {
+  if (topicsError || !topics || !topics.length) {
     throw new Error('No topics found for this syllabus');
   }
 
@@ -38,7 +37,7 @@ const generateStudyPlan = async (userId, syllabusId, planData) => {
       plan_id: plan.id,
       topic_id: topic.id,
       user_id: userId,
-      title: topic.name || topic.title,
+      title: topic.topic_name,
       due_date: dueDate.toISOString(),
       is_completed: false
     };
