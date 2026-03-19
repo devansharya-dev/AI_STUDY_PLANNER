@@ -1,59 +1,36 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenAI } = require("@google/genai");
 
-if (!process.env.GEMINI_API_KEY) {
-  throw new Error("GEMINI_API_KEY is missing");
-}
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-async function extractTopics(syllabusText) {
+async function extractTopics(text) {
   try {
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
-    });
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `Extract topics from this syllabus.
 
-    const prompt = `
-Extract topics from the syllabus below.
-
-STRICT RULES:
-- Return ONLY valid JSON
-- No explanation
-- No extra text
-- No markdown
-
-FORMAT:
+Return ONLY JSON:
 {
   "topics": ["topic1", "topic2"]
 }
 
-SYLLABUS:
-${syllabusText}
-`;
+Syllabus:
+${text}`,
+    });
 
-    const result = await model.generateContent(prompt);
-    const raw = result.response.text();
+    const raw = response.text;
 
-    const jsonStart = raw.indexOf("{");
-    const jsonEnd = raw.lastIndexOf("}");
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
 
-    if (jsonStart === -1 || jsonEnd === -1) {
-      console.error("No JSON found:", raw);
-      return [];
-    }
+    if (start === -1 || end === -1) return [];
 
-    const cleaned = raw.substring(jsonStart, jsonEnd + 1);
+    const parsed = JSON.parse(raw.substring(start, end + 1));
 
-    let parsed;
-    try {
-      parsed = JSON.parse(cleaned);
-    } catch (err) {
-      console.error("JSON parse failed:", cleaned);
-      return [];
-    }
-
-    return Array.isArray(parsed.topics) ? parsed.topics : [];
-  } catch (error) {
-    console.error("AI ERROR:", error.message);
+    return parsed.topics || [];
+  } catch (err) {
+    console.error("AI ERROR:", err);
     return [];
   }
 }

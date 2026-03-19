@@ -1,5 +1,5 @@
-const supabase = require("../config/supabaseClient.js");
-const extractTopics = require("../services/aiService.js");
+const supabase = require("../config/supabaseClient");
+const extractTopics = require("../services/aiService"); // 👈 SIMPLE IMPORT
 const pdfParse = require("pdf-parse");
 
 const createSyllabus = async (req, res) => {
@@ -7,31 +7,28 @@ const createSyllabus = async (req, res) => {
     let { title, description } = req.body;
     let content = description;
 
-    // safe user (if auth removed for testing)
-    const user_id = req.user?.id || null;
+    const user_id = null; // keep simple for now
 
-    // 📄 Handle file upload
+    // file handling
     if (req.file) {
       if (req.file.mimetype === "application/pdf") {
-        const pdfData = await pdfParse(req.file.buffer);
-        content = pdfData.text;
+        const pdf = await pdfParse(req.file.buffer);
+        content = pdf.text;
       } else {
         content = req.file.buffer.toString("utf-8");
       }
 
-      if (!title) {
-        title = req.file.originalname;
-      }
+      if (!title) title = req.file.originalname;
     }
 
     if (!title || !content) {
       return res.status(400).json({
-        error: "Title and content are required",
+        error: "Title and content required",
       });
     }
 
-    // ✅ 1. Save syllabus
-    const { data: syllabusData, error: syllabusError } = await supabase
+    // 🔥 SAVE SYLLABUS
+    const { data, error } = await supabase
       .from("syllabus")
       .insert([
         {
@@ -43,47 +40,33 @@ const createSyllabus = async (req, res) => {
       .select()
       .single();
 
-    if (syllabusError) {
-      return res.status(400).json({
-        error: syllabusError.message,
-      });
+    if (error) {
+      return res.status(400).json({ error: error.message });
     }
 
-    // ✅ 2. Extract topics using AI
+    // 🔥 AI CALL
+    console.log("Calling AI...");
     const topics = await extractTopics(content);
+    console.log("TOPICS:", topics);
 
-    console.log("EXTRACTED TOPICS:", topics);
+    // 🔥 SAVE TOPICS
+    if (topics.length > 0) {
+      const topicRows = topics.map((t) => ({
+        syllabus_id: data.id,
+        topic: t,
+      }));
 
-    // ✅ 3. Store topics
-    const topicsToInsert = topics.map((topic) => ({
-      syllabus_id: syllabusData.id,
-      topic: topic,
-    }));
-
-    if (topicsToInsert.length > 0) {
-      const { error: topicError } = await supabase
-        .from("topics")
-        .insert(topicsToInsert);
-
-      if (topicError) {
-        return res.status(400).json({
-          error: topicError.message,
-        });
-      }
+      await supabase.from("topics").insert(topicRows);
     }
 
-    // ✅ Final response
     res.json({
-      message: "Syllabus created and topics extracted",
-      syllabus: syllabusData,
+      message: "Success",
       topics,
     });
-  } catch (error) {
-    console.error("Syllabus Creation Error:", error);
-
+  } catch (err) {
+    console.error("ERROR:", err);
     res.status(500).json({
-      error: "Something went wrong",
-      details: error.message,
+      error: err.message,
     });
   }
 };
