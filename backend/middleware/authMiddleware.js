@@ -4,7 +4,8 @@ const authMiddleware = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    return res.status(401).json({ error: 'Missing Authorization header' });
+    console.warn('[AuthMiddleware] Missing Authorization header');
+    return res.status(401).json({ success: false, error: 'Missing Authorization header' });
   }
 
   // Handle both 'Bearer <token>' and cases where the user accidentally includes 'Bearer ' twice
@@ -15,24 +16,34 @@ const authMiddleware = async (req, res, next) => {
       token = token.substring(7).trim();
     }
   } else {
-    return res.status(401).json({ error: 'Authorization header must start with Bearer' });
+    console.warn('[AuthMiddleware] Invalid Authorization header format');
+    return res.status(401).json({ success: false, error: 'Authorization header must start with Bearer' });
   }
 
   if (!token) {
-    return res.status(401).json({ error: 'Token is missing' });
+    console.warn('[AuthMiddleware] Token is missing after Bearer prefix');
+    return res.status(401).json({ success: false, error: 'Token is missing' });
   }
 
   try {
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
     if (error || !user) {
-      return res.status(401).json({ error: 'Unauthorized', details: error?.message });
+      console.warn(`[AuthMiddleware] Error validating token: ${error?.message || 'User not found'}`);
+      
+      const errorMessage = error?.message?.toLowerCase() || '';
+      if (errorMessage.includes('expired') || errorMessage.includes('jwt expired')) {
+        return res.status(401).json({ success: false, error: 'Token expired', details: error?.message });
+      }
+
+      return res.status(401).json({ success: false, error: 'Unauthorized', details: error?.message });
     }
 
     req.user = user;
     next();
   } catch (err) {
-    return res.status(500).json({ error: 'Internal server error during authentication' });
+    console.error('[AuthMiddleware] Internal server error:', err.message);
+    return res.status(500).json({ success: false, error: 'Internal server error during authentication' });
   }
 };
 

@@ -7,7 +7,7 @@ const createSyllabus = async (req, res) => {
     let { title, description } = req.body;
     let content = description;
 
-    const user_id = null; // keep simple for now
+    const user_id = req.user.id; // Use authenticated user ID
 
     // file handling
     if (req.file) {
