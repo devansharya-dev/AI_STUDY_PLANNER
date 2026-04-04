@@ -66,7 +66,8 @@ frontend/
 │   │   ├── Dashboard.jsx
 │   │   ├── UploadSyllabus.jsx
 │   │   ├── StudyPlan.jsx
-│   │   └── Tasks.jsx
+│   │   ├── Tasks.jsx
+│   │   └── Chat.jsx
 │
 │   ├── animations/
 │   │   ├── heroAnimation.js
@@ -82,7 +83,8 @@ frontend/
 │   │   ├── api.js
 │   │   ├── syllabusService.js
 │   │   ├── planService.js
-│   │   └── taskService.js
+│   │   ├── taskService.js
+│   │   └── chatService.js
 │
 │   ├── context/
 │   │   └── AuthContext.js
@@ -110,13 +112,15 @@ backend/
 │   ├── authController.js
 │   ├── syllabusController.js
 │   ├── planController.js
-│   └── taskController.js
+│   ├── taskController.js
+│   └── chatController.js
 │
 ├── routes/
 │   ├── authRoutes.js
 │   ├── syllabusRoutes.js
 │   ├── planRoutes.js
-│   └── taskRoutes.js
+│   ├── taskRoutes.js
+│   └── chatRoutes.js
 │
 ├── services/
 │   ├── aiService.js
@@ -198,6 +202,11 @@ Tasks
 
 GET /api/tasks  
 PATCH /api/tasks/:id  
+
+Chat
+
+GET /api/chat
+POST /api/chat
 
 ---
 

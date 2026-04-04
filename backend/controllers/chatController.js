@@ -1,21 +1,13 @@
-const { askAI } = require("../services/chatService");
+const { streamFromOllama } = require("../services/chatService");
 
 const chat = async (req, res) => {
-  try {
-    const { message } = req.body;
+  const userId = req.user?.id;
+  const { message } = req.body;
 
-    if (!message) {
-      return res.status(400).json({ error: "Message required" });
-    }
+  res.setHeader("Content-Type", "text/plain");
+  res.setHeader("Transfer-Encoding", "chunked");
 
-    const reply = await askAI(message);
-
-    res.json({ reply });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Chat failed" });
-  }
+  await streamFromOllama(userId, message, res);
 };
 
 module.exports = { chat };
