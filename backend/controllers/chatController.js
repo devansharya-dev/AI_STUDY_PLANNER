@@ -1,4 +1,4 @@
-const { streamFromOllama } = require("../services/chatService");
+const { streamFromOllama, getChatHistory } = require("../services/chatService");
 
 const chat = async (req, res) => {
   const userId = req.user?.id;
@@ -10,4 +10,14 @@ const chat = async (req, res) => {
   await streamFromOllama(userId, message, res);
 };
 
-module.exports = { chat };
+const getHistory = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const history = await getChatHistory(userId);
+    res.json(history);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get chat history" });
+  }
+};
+
+module.exports = { chat, getHistory };

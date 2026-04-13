@@ -30,9 +30,9 @@ const createSyllabusService = async (userId, syllabusData) => {
   // Insert topics
   if (topics && topics.length > 0) {
     const topicsWithIds = topics.map(topicName => ({
-      topic_name: topicName,
+      topic: topicName,
       syllabus_id: syllabus.id,
-      user_id: userId // If your schema allows user_id here for RLS
+      user_id: userId
     }));
 
     const { error: topicsError } = await supabase

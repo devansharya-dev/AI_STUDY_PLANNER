@@ -1,0 +1,29 @@
+Course: Introduction to Modern Web Development
+Duration: 4 Weeks
+Target Exam: Midterm 1
+
+Week 1: Fundamentals of the Frontend
+- HTML5 Semantics and Accessibility Basics
+- CSS3 Flexbox and CSS Grid
+- Responsive Design Principles and Media Queries
+- JavaScript Basics: Variables, Loops, Functions
+- DOM Manipulation and Event Listeners
+
+Week 2: Advanced JavaScript and APIs
+- ES6+ Features: Arrow functions, Destructuring, Spread/Rest operators
+- Asynchronous JS: Promises and Async/Await
+- Fetch API and RESTful principles
+- Error handling with try/catch
+
+Week 3: React Fundamentals
+- Introduction to React and JSX
+- Components, Props, and State Management (useState)
+- Component Lifecycle and useEffect Hook
+- List rendering and conditional rendering
+- Handling Forms in React
+
+Week 4: Routing and State Management
+- React Router DOM Basics (Routes, Links, URL Parameters)
+- Context API for global state
+- Introduction to backend integration
+- Deployment basics (Vercel / Netlify)

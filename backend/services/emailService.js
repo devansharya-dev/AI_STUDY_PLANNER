@@ -1,44 +1,46 @@
+require('dotenv').config();
 const nodemailer = require('nodemailer');
-const logger = require('../utils/logger');
 
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: process.env.EMAIL_PORT || 587,
-  secure: false, // true for 465, false for other ports
+  service: 'gmail',
   auth: {
+    type: 'OAuth2',
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    clientId: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    refreshToken: process.env.REFRESH_TOKEN,
   },
 });
 
-/**
- * Send an email using Nodemailer
- * @param {Object} options - { to, subject, text, html }
- */
+// Verify the connection configuration
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('Error connecting to email server:', error);
+  } else {
+    console.log('Email server is ready to send messages');
+  }
+});
+
+// Function to send email
 const sendEmail = async ({ to, subject, text, html }) => {
   try {
-    // If auth is not configured, just log to prevent crashes in dev
-    if (!process.env.EMAIL_USER) {
-      logger.warn(`Email simulated to ${to}. Set EMAIL_USER to actually send.`);
-      return { success: true, simulated: true };
-    }
-
     const info = await transporter.sendMail({
-      from: `"AI Study Planner" <${process.env.EMAIL_USER}>`,
-      to,
-      subject,
-      text,
-      html,
+      from: `"AI Study Planner" <${process.env.EMAIL_USER}>`, // sender address
+      to, // list of receivers
+      subject, // Subject line
+      text, // plain text body
+      html, // html body
     });
-    
-    logger.info(`Email sent to ${to}: ${info.messageId}`);
+
+    console.log('Message sent: %s', info.messageId);
     return { success: true, messageId: info.messageId };
-  } catch (err) {
-    logger.error(`Error sending email to ${to}:`, err.message);
-    return { success: false, error: err.message };
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return { success: false, error: error.message };
   }
 };
 
 module.exports = {
   sendEmail,
+  transporter
 };

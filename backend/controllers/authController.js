@@ -1,5 +1,5 @@
 const supabase = require('../config/supabaseClient');
-
+const { sendEmail } = require('../services/emailService');
 // Helper for simple input validation
 const validateAuthInput = (email, password) => {
   if (!email || !password) {
@@ -43,6 +43,32 @@ const signup = async (req, res) => {
       });
     }
 
+    // Ensure profile exists
+    await supabase.from('profiles').upsert([{ id: data.user.id, email }]);
+
+
+    // --- Send Welcome Email ---
+    const htmlBody = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #ddd; background-color: #fcfcfc;">
+        <h2 style="color: #111; font-family: 'Courier New', Courier, monospace; text-transform: uppercase;">Initialization Complete</h2>
+        <p>Hyy there!</p>
+        <p>Welcome to our portal. We are incredibly excited to have you onboard.</p>
+        <p>Your AI Study Planner is now ready to help you absolutely destroy procrastination. Log in now to spin up your very first optimized study queue.</p>
+        <br/>
+        <p>Stay focused,</p>
+        <p><strong>The AI Study Planner Team</strong></p>
+      </div>
+    `;
+
+    // Dispatch the welcome email non-blocking
+    sendEmail({
+      to: email,
+      subject: 'Welcome to AI Study Planner 🚀',
+      text: 'Hyy there! Welcome to our portal. Login now to organize your queue!',
+      html: htmlBody
+    }).catch(err => console.error('Failed to send welcome email:', err));
+    // ---------------------------
+
     res.status(201).json({
       success: true,
       message: 'User created successfully. Please check your email for verification.',
@@ -84,6 +110,10 @@ const login = async (req, res) => {
         error: error.message 
       });
     }
+
+    // Ensure profile exists on login as well
+    await supabase.from('profiles').upsert([{ id: data.user.id, email }]);
+
 
     res.status(200).json({
       success: true,

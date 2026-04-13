@@ -17,7 +17,8 @@ const generateStudyPlan = async (userId, syllabusId, planData) => {
   const { data: topics, error } = await supabase
     .from('topics')
     .select('*')
-    .eq('syllabus_id', syllabusId);
+    .eq('syllabus_id', syllabusId)
+    .eq('user_id', userId);
 
   if (error) throw error;
   if (!topics || topics.length === 0) {
@@ -40,8 +41,7 @@ const generateStudyPlan = async (userId, syllabusId, planData) => {
     .insert([{
       syllabus_id: syllabusId,
       user_id: userId,
-      start_date,
-      duration_days
+      start_date
     }])
     .select()
     .single();

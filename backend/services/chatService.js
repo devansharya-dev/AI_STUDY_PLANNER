@@ -25,6 +25,7 @@ async function getUserContext(userId) {
   const { data: topics } = await supabase
     .from("topics")
     .select("topic")
+    .eq("user_id", userId)
     .limit(20);
 
   const { data: tasks } = await supabase
@@ -185,4 +186,5 @@ async function streamFromOllama(userId, message, res) {
 
 module.exports = {
   streamFromOllama,
+  getChatHistory,
 };

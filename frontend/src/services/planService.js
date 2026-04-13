@@ -1,9 +1,6 @@
 import API from "./api";
 
-export const generateStudyPlan = async (syllabusId, days) => {
-  const res = await API.post("/plan/generate", {
-    syllabusId,
-    days,
-  });
+export const generateStudyPlan = async (data) => {
+  const res = await API.post("/plan/generate", data);
   return res.data;
 };

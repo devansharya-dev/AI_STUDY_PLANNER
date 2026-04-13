@@ -29,8 +29,12 @@ The goal is to build a **SaaS Study Planner** that helps students:
 *   **Study Plan**: An AI-generated or manual plan to manage learning schedules.
 *   **Task Management**: A robust system to mark tasks as complete and track deadlines.
 
-## 📈 Next Steps
-- [ ] Implement the **Authentication** flow in `AuthContext` and `useAuth`.
-- [ ] Design the **Navbar** and **Sidebar** for navigation.
-- [ ] Create the **Syllabus Upload** logic in `syllabusService.js`.
-- [ ] Build the interactive **Dashboard** with animations.
+##  Next Steps / Completed Items
+- [x] Implement the **Authentication** flow in `AuthContext` and `useAuth`.
+- [x] Design the **Navbar** and **Sidebar** for navigation.
+- [x] Create the **Syllabus Upload** logic in `syllabusService.js` handling PDFs or text.
+- [x] Build the interactive **Dashboard** with animations.
+- [x] Deploy the active task queue system in the **Task Manager**.
+- [x] Build the LLM **Chat Interface** terminal via Ollama stream.
+- [x] Enable the **Daily Reminders** via node-cron querying the database.
+- [x] Secure the Node.js APIs via **AuthMiddleware** and **Global Error Middleware**.

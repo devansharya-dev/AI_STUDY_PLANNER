@@ -10,7 +10,7 @@ export default function useTasks() {
   };
 
   const toggle = async (task) => {
-    await toggleTaskStatus(task.id, !task.completed);
+    await toggleTaskStatus(task.id, !task.is_completed);
     loadTasks();
   };
 

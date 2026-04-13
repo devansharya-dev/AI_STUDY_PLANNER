@@ -53,6 +53,7 @@ const createSyllabus = async (req, res) => {
     if (topics.length > 0) {
       const topicRows = topics.map((t) => ({
         syllabus_id: data.id,
+        user_id,
         topic: t,
       }));
 
@@ -61,6 +62,7 @@ const createSyllabus = async (req, res) => {
 
     res.json({
       message: "Success",
+      syllabus: data,
       topics,
     });
   } catch (err) {

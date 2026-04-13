@@ -87,6 +87,25 @@ D:\SAAS\
 
 ---
 
+## 📐 Architecture & Flow Diagram
+
+```mermaid
+graph TD
+    A[User] -->|Uploads PDF/Text| B(Frontend - React)
+    B -->|Sends File/Text| C{Backend - Express/Node}
+    C -->|Extracts Text & Topics| D[PDF Parser / Logic]
+    D -->|Structures Output| C
+    C -->|Saves Syllabus & Topics| E[(Supabase DB)]
+    C -->|Generates Study Plan| E
+    E -->|Returns Plan Data| B
+    B -->|Displays Dashboard & Tasks| A
+    F[Cron Job] -->|Checks pending tasks daily| E
+    F -->|Triggers Email| G[Email Service]
+    G -->|Sends Daily Reminder| A
+```
+
+---
+
 ## 🔄 Key User Flows
 
 1.  **Onboarding:** Sign up -> Dashboard access.

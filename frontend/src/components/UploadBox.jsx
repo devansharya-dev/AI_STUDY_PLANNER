@@ -7,8 +7,7 @@ export default function UploadBox({ onSubmit }) {
   return (
     <div>
       <textarea
-        rows="10"
-        placeholder="Paste syllabus..."
+        rows="8"
         value={text}
         onChange={(e) => setText(e.target.value)}
       />

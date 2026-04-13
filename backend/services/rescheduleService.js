@@ -46,7 +46,8 @@ const rescheduleTasks = async (userId, planId) => {
     await supabase
       .from('tasks')
       .update({ due_date: t.due_date })
-      .eq('id', t.id);
+      .eq('id', t.id)
+      .eq('user_id', userId);
   }
 
   return {
