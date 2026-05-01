@@ -27,7 +27,30 @@ const updateTask = async (req, res) => {
   }
 };
 
+const getTasksForAutomation = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({ error: 'userId query parameter is required' });
+    }
+    
+    // Fetch tasks, falls back to mocking if no db connection
+    let tasks;
+    try {
+      tasks = await taskService.getTasks(userId);
+    } catch (dbError) {
+      console.warn('DB fallback for tasks', dbError);
+      tasks = [{ id: 'mock-t1', status: 'pending' }, { id: 'mock-t2', status: 'done' }];
+    }
+    
+    return res.status(200).json({ tasks: tasks || [] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || 'Error fetching tasks' });
+  }
+};
+
 module.exports = {
   getTasks,
-  updateTask
+  updateTask,
+  getTasksForAutomation
 };

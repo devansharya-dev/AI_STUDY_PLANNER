@@ -12,6 +12,8 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const authRoutes = require('./routes/authRoutes');
 const { notFoundHandler, globalErrorHandler } = require('./middleware/errorMiddleware');
 const chatRoutes = require("./routes/chatRoutes");
+const notificationRoutes = require('./routes/notificationRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 const app = express();
 
@@ -29,6 +31,11 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/reschedule', rescheduleRoutes);
 app.use("/api/chat", chatRoutes);
+
+// Automation Routes
+app.use("/api/v1/notifications", notificationRoutes);
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/tasks", taskRoutes.automationRouter);
 
 // 404 handler
 app.use(notFoundHandler);
