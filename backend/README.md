@@ -10,18 +10,24 @@ D:\SAAS\backend\
 │   ├── authController.js   # Handles user authentication and registration
 │   ├── syllabusController.js # Manages syllabus-related operations
 │   ├── planController.js     # Handles learning or project plan logic
-│   └── taskController.js     # Manages individual tasks and updates
+│   ├── taskController.js     # Manages individual tasks and updates
+│   ├── notificationController.js # Handles notification/automation webhook requests
+│   └── userController.js     # Manages user profile interactions
 │
 ├── routes/                 # API routes: Define the endpoints and map them to controllers
 │   ├── authRoutes.js       # Endpoints for authentication (login, signup)
 │   ├── syllabusRoutes.js   # Endpoints for syllabus management
 │   ├── planRoutes.js       # Endpoints for plan generation and retrieval
-│   └── taskRoutes.js       # Endpoints for task-related operations
+│   ├── taskRoutes.js       # Endpoints for task-related operations
+│   ├── notificationRoutes.js # Endpoints for notification delivery and webhooks
+│   └── userRoutes.js       # Endpoints for user management
 │
 ├── services/               # Business logic: Core application logic and third-party integrations
-│   ├── aiService.js        # Integration with AI providers (e.g., OpenAI, Gemini)
+│   ├── aiService.js        # Integration with Local AI (Ollama, e.g., Llama 3)
 │   ├── schedulerService.js # Logic for scheduling tasks or reminders
-│   └── emailService.js     # Logic for sending emails (e.g., via SendGrid or Nodemailer)
+│   ├── emailService.js     # Logic for sending emails (e.g., via SendGrid or Nodemailer)
+│   ├── notificationService.js # Processing logic for email/task notifications
+│   └── userService.js      # Business logic for user retrieval and data management
 │
 ├── middleware/             # Custom middleware for request processing
 │   ├── authMiddleware.js   # Validates JWT tokens or sessions
@@ -89,7 +95,8 @@ graph TD
    PORT=5000
    SUPABASE_URL=your_supabase_url
    SUPABASE_KEY=your_supabase_anon_key
-   AI_API_KEY=your_ai_api_key
+   OLLAMA_URL=http://localhost:11500
+   EMAIL_USER=your_email@gmail.com
    ```
 
 3. **Run in Development**:
