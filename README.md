@@ -13,6 +13,7 @@ Students often struggle to organize extensive syllabi into manageable daily rout
 - **Local AI Integration:** Integrated **Ollama** (e.g., Llama 3) for blazing-fast, completely private, and local syllabus extraction and chat interactions without relying on external APIs.
 - **Immersive Apple-like UI/UX:** Completely modernized the frontend interface, leveraging advanced animations for a premium, buttery-smooth user experience.
 - **Robust Notification & User Systems:** Introduced dedicated backend services (`notificationService`, `userService`) to reliably manage daily email reminders and scalable user profiles.
+- **Codebase Cleanup:** Streamlined the backend by removing outdated standalone test scripts (`test_api.js`, etc.) ensuring a cleaner, production-ready repository.
 - **Enhanced Chat Logic:** Refined the LLM chat integration for more contextual, intelligent, and responsive study assistance.
 - **Architecture Documentation:** Added comprehensive Mermaid architecture diagrams for better developer onboarding.
 
