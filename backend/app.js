@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
 
 const syllabusRoutes = require('./routes/syllabusRoutes');
 const planRoutes = require('./routes/planRoutes');
@@ -22,6 +23,24 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
+
+// Rate Limiting (Scalability & Security)
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 150, // Limit each IP to 150 requests per window
+  message: { error: 'Too many requests from this IP, please try again after 15 minutes' },
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+});
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 50, // Stricter limit for API routes
+  message: { error: 'Too many API requests, please try again later' },
+});
+
+app.use(globalLimiter);
+app.use('/api', apiLimiter);
 
 // Routes
 app.use('/api/syllabus', syllabusRoutes);

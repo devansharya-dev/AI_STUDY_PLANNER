@@ -75,6 +75,7 @@ graph TD
 - **`cors`**: Middleware to enable Cross-Origin Resource Sharing, allowing frontend apps to talk to this API.
 - **`helmet`**: Enhances API security by setting various HTTP headers.
 - **`morgan`**: HTTP request logger middleware for development.
+- **`express-rate-limit`**: Middleware to rate-limit incoming requests, preventing API abuse and ensuring scalability.
 - **`axios`**: Promise-based HTTP client for making requests to external APIs (like AI services).
 - **`node-cron`**: Used to schedule background tasks (jobs) like daily reminders.
 - **`multer`**: Middleware for handling `multipart/form-data`, primarily used for file uploads.
