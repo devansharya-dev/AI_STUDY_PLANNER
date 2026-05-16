@@ -42,15 +42,21 @@ export default function Chat() {
   };
 
   return (
-    <div className="max-w-3xl w-full mx-auto py-8 px-4 flex flex-col h-[calc(100vh-80px)]">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.3 }}
+      className="max-w-3xl w-full mx-auto flex flex-col h-full font-sans selection:bg-indigo-100 pb-2"
+    >
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-white mb-1">AI Assistant</h1>
-        <p className="text-sm text-slate-400">Your personal study companion.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-1">AI Assistant</h1>
+        <p className="text-sm text-gray-500 font-medium">Your personal study companion.</p>
       </div>
 
       <div className="flex-1 overflow-y-auto mb-6 pr-2 space-y-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {messages.length === 0 && (
-          <div className="flex items-center justify-center h-full text-slate-500 text-sm">
+          <div className="flex items-center justify-center h-full text-gray-400 text-sm font-medium">
             How can I help you with your studies today?
           </div>
         )}
@@ -63,10 +69,10 @@ export default function Chat() {
               className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}
             >
               <div 
-                className={`max-w-[85%] text-sm leading-relaxed px-5 py-3 rounded-2xl ${
+                className={`max-w-[85%] text-[15px] leading-relaxed px-5 py-3.5 rounded-2xl shadow-sm ${
                   m.role === 'user' 
-                  ? 'bg-indigo-500 text-white rounded-br-sm' 
-                  : 'bg-[#0f172a] text-slate-200 border border-slate-800 rounded-bl-sm'
+                  ? 'bg-gray-900 text-white rounded-br-sm' 
+                  : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm'
                 }`}
               >
                 {m.text}
@@ -79,22 +85,22 @@ export default function Chat() {
 
       <form 
         onSubmit={send} 
-        className="relative flex items-center bg-[#0f172a] border border-slate-700/50 hover:border-slate-600 focus-within:border-indigo-500/50 transition-colors rounded-2xl overflow-hidden shadow-lg p-1"
+        className="relative flex items-center bg-white border border-gray-200 hover:border-gray-300 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition-all rounded-2xl overflow-hidden shadow-sm p-1.5"
       >
         <input 
           value={input} 
           onChange={(e) => setInput(e.target.value)} 
           placeholder="Ask me anything..."
-          className="flex-1 bg-transparent border-none outline-none text-sm text-slate-200 placeholder-slate-500 py-3 pl-4"
+          className="flex-1 bg-transparent border-none outline-none text-[15px] text-gray-900 placeholder-gray-400 py-3 pl-4 font-medium"
         />
         <button 
           type="submit" 
           disabled={!input.trim()}
-          className="bg-indigo-500 text-white p-2 mr-1 rounded-xl hover:bg-indigo-600 disabled:opacity-50 transition-colors"
+          className="bg-gray-900 text-white p-2.5 mr-1 rounded-xl hover:bg-gray-800 disabled:opacity-30 transition-colors shadow-sm"
         >
           <SendHorizonal size={18} />
         </button>
       </form>
-    </div>
+    </motion.div>
   );
 }

@@ -1,30 +1,66 @@
 const supabase = require('../config/supabaseClient');
 
-const getTasks = async (userId) => {
-  const { data: tasks, error } = await supabase
-    .from('tasks')
-    .select('*')
-    .eq('user_id', userId)
-    .order('due_date', { ascending: true });
+const getTasks = async (userId, { status, page, limit }) => {
+  const safePage = Number(page) || 1;
+  const safeLimit = Number(limit) || 10;
 
-  if (error) throw error;
-  return tasks;
+  let query = supabase
+    .from('tasks')
+    .select(`
+      id,
+      due_date,
+      status,
+      topics!inner (
+        topic
+      )
+    `)
+    .order('due_date', { ascending: true })
+    .range((safePage - 1) * safeLimit, safePage * safeLimit - 1);
+
+  if (status) {
+    query = query.eq('status', status);
+  }
+
+  const { data, error } = await query;
+  
+  if (error) {
+    console.error("SUPABASE ERROR:", error);
+    throw error;
+  }
+
+  console.log("TASKS RAW:", data);
+
+  // Flatten response to return `topic` clearly
+  return (data || []).map(task => ({
+    id: task.id,
+    due_date: task.due_date,
+    status: task.status,
+    topic: task.topics?.topic || "Unknown Topic",
+  }));
 };
 
-const updateTaskCompletion = async (userId, taskId, is_completed) => {
-  const { data: task, error } = await supabase
+const updateTaskStatus = async (userId, id, status) => {
+  const completed_at = status === 'completed' ? new Date().toISOString() : null;
+
+  // Perform the update
+  const { data, error } = await supabase
     .from('tasks')
-    .update({ is_completed })
-    .eq('id', taskId)
-    .eq('user_id', userId)
+    .update({ 
+      status, 
+      completed_at 
+    })
+    .eq('id', id)
     .select()
     .single();
 
-  if (error) throw error;
-  return task;
+  if (error) {
+    console.error("SUPABASE ERROR:", error);
+    throw error;
+  }
+  return data;
 };
 
 module.exports = {
   getTasks,
-  updateTaskCompletion
+  updateTaskStatus
 };

@@ -1,11 +1,12 @@
-const supabase = require("../config/supabaseClient");
-const extractTopics = require("../services/aiService"); // 👈 SIMPLE IMPORT
 const pdfParse = require("pdf-parse");
+const { createSyllabusSchema } = require("../validators");
+const { upsertSyllabusService } = require("../services/syllabusService");
+const axios = require("axios");
 
 const createSyllabus = async (req, res) => {
   try {
     let { title, description } = req.body;
-    let content = description;
+    let content = description || "";
 
     const user_id = req.user.id; // Use authenticated user ID
 
@@ -21,49 +22,42 @@ const createSyllabus = async (req, res) => {
       if (!title) title = req.file.originalname;
     }
 
-    if (!title || !content) {
+    // Ensure title is a string and trimmed to prevent accidental duplicates
+    if (title && typeof title === 'string') {
+      title = title.trim();
+    }
+
+    // Validate request data using Zod
+    const validationResult = createSyllabusSchema.safeParse({ title, content });
+    
+    if (!validationResult.success) {
       return res.status(400).json({
-        error: "Title and content required",
+        error: validationResult.error.errors.map(e => e.message).join(", ")
       });
     }
 
-    // 🔥 SAVE SYLLABUS
-    const { data, error } = await supabase
-      .from("syllabus")
-      .insert([
-        {
-          user_id,
-          title,
-          description: content,
-        },
-      ])
-      .select()
-      .single();
+    const validData = validationResult.data;
 
-    if (error) {
-      return res.status(400).json({ error: error.message });
-    }
+    // Use the service to handle Supabase UPSERT and AI topics
+    const result = await upsertSyllabusService(user_id, validData.title, validData.content);
 
-    // 🔥 AI CALL
-    console.log("Calling AI...");
-    const topics = await extractTopics(content);
-    console.log("TOPICS:", topics);
-
-    // 🔥 SAVE TOPICS
-    if (topics.length > 0) {
-      const topicRows = topics.map((t) => ({
-        syllabus_id: data.id,
-        user_id,
-        topic: t,
-      }));
-
-      await supabase.from("topics").insert(topicRows);
+    // Trigger n8n webhook
+    try {
+      await axios.post("http://localhost:5678/webhook/syllabus-uploaded", {
+        userId: user_id,
+        syllabusId: result.syllabus_id,
+        topicCount: result.topics ? result.topics.length : 0
+      });
+    } catch (webhookError) {
+      console.error("Webhook trigger failed:", webhookError.message);
     }
 
     res.json({
+      success: true,
       message: "Success",
-      syllabus: data,
-      topics,
+      syllabus: { id: result.syllabus_id },
+      syllabus_id: result.syllabus_id,
+      topics: result.topics,
     });
   } catch (err) {
     console.error("ERROR:", err);

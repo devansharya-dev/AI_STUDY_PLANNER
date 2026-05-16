@@ -5,7 +5,7 @@ export const fetchTasks = async () => {
   return res.data.data || [];
 };
 
-export const toggleTaskStatus = async (id, completed) => {
-  const res = await API.patch(`/tasks/${id}`, { is_completed: completed });
+export const toggleTaskStatus = async (id, status) => {
+  const res = await API.patch(`/tasks/${id}`, { status });
   return res.data;
 };

@@ -1,56 +1,54 @@
 const taskService = require('../services/taskService');
 
-const getTasks = async (req, res) => {
+const getTasks = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const tasks = await taskService.getTasks(userId);
-    return res.status(200).json({ data: tasks });
+    const { status, page, limit } = req.query; // Already validated and coerced by Zod
+    const tasks = await taskService.getTasks(userId, { status, page, limit });
+    
+    res.status(200).json({ success: true, data: tasks });
   } catch (error) {
-    return res.status(400).json({ error: error.message || 'Error fetching tasks' });
+    console.error("SUPABASE ERROR:", error);
+    return res.status(500).json({ error: error.message });
   }
 };
 
-const updateTask = async (req, res) => {
+const updateTaskStatus = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const { id } = req.params;
-    const { is_completed } = req.body;
+    const { status } = req.body;
 
-    if (typeof is_completed !== 'boolean') {
-      return res.status(400).json({ error: 'is_completed (boolean) is required' });
+    const updatedTask = await taskService.updateTaskStatus(userId, id, status);
+    
+    if (!updatedTask) {
+      return res.status(404).json({ success: false, error: 'Task not found' });
     }
 
-    const task = await taskService.updateTaskCompletion(userId, id, is_completed);
-    return res.status(200).json({ message: 'Task updated successfully', data: task });
+    res.status(200).json({ success: true, data: updatedTask });
   } catch (error) {
-    return res.status(400).json({ error: error.message || 'Error updating task' });
+    console.error("SUPABASE ERROR:", error);
+    return res.status(500).json({ error: error.message });
   }
 };
 
-const getTasksForAutomation = async (req, res) => {
+const getTasksForAutomation = async (req, res, next) => {
   try {
     const { userId } = req.query;
     if (!userId) {
       return res.status(400).json({ error: 'userId query parameter is required' });
     }
     
-    // Fetch tasks, falls back to mocking if no db connection
-    let tasks;
-    try {
-      tasks = await taskService.getTasks(userId);
-    } catch (dbError) {
-      console.warn('DB fallback for tasks', dbError);
-      tasks = [{ id: 'mock-t1', status: 'pending' }, { id: 'mock-t2', status: 'done' }];
-    }
-    
+    const tasks = await taskService.getTasks(userId, { page: 1, limit: 100 });
     return res.status(200).json({ tasks: tasks || [] });
   } catch (error) {
-    return res.status(500).json({ error: error.message || 'Error fetching tasks' });
+    console.error("SUPABASE ERROR:", error);
+    return res.status(500).json({ error: error.message });
   }
 };
 
 module.exports = {
   getTasks,
-  updateTask,
+  updateTaskStatus,
   getTasksForAutomation
 };

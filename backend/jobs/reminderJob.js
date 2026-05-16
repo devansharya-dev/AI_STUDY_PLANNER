@@ -10,7 +10,7 @@ const sendDailyReminders = async () => {
     const { data: incompleteTasks, error } = await supabase
       .from('tasks')
       .select('*')
-      .eq('is_completed', false);
+      .eq('status', 'pending');
 
     if (error) {
       throw error;

@@ -1,173 +1,67 @@
 const supabase = require('../config/supabaseClient');
 
-const DIFFICULTY_WEIGHT = {
-  easy: 1,
-  medium: 2,
-  hard: 3
-};
-
-// MAIN FUNCTION
-const generateStudyPlan = async (userId, syllabusId, planData) => {
-  const {
-    start_date = new Date(),
-    duration_days = 7
-  } = planData;
-
+const createStudyPlan = async (userId, syllabus_id, start_date, duration_days) => {
   // 1. Fetch topics
-  const { data: topics, error } = await supabase
+  const { data: topics, error: topicsError } = await supabase
     .from('topics')
-    .select('*')
-    .eq('syllabus_id', syllabusId)
-    .eq('user_id', userId);
+    .select('id, estimated_time')
+    .eq('syllabus_id', syllabus_id)
+    .order('priority', { ascending: false });
 
-  if (error) throw error;
+  if (topicsError) throw topicsError;
   if (!topics || topics.length === 0) {
-    throw new Error('No topics found');
+    throw new Error('No topics found for this syllabus');
   }
 
-  // 2. Enrich topics
-  let enrichedTopics = topics.map(t => ({
-    ...t,
-    difficulty: t.difficulty || "medium",
-    weight: DIFFICULTY_WEIGHT[t.difficulty] || 2
-  }));
-
-  // Shuffle to balance load
-  enrichedTopics = shuffle(enrichedTopics);
-
-  // 3. Create study plan
+  // 2. Create Plan
   const { data: plan, error: planError } = await supabase
     .from('study_plans')
-    .insert([{
-      syllabus_id: syllabusId,
-      user_id: userId,
-      start_date
+    .insert([{ 
+      syllabus_id, 
+      user_id: userId, 
+      start_date: start_date,
+      duration_days: duration_days
     }])
     .select()
     .single();
 
   if (planError) throw planError;
+  
+  const plan_id = plan.id;
 
-  const tasks = [];
-  const DAILY_CAPACITY = 4;
+  // 3. Distribute tasks
+  const tasksToInsert = [];
+  let currentDate = new Date(start_date);
+  let currentDayMins = 0;
 
-  let topicQueue = [...enrichedTopics];
-  let completedTopics = [];
+  for (const topic of topics) {
+    const timeRequired = topic.estimated_time || 30; // fallback if null
 
-  // 4. Generate daily schedule
-  for (let day = 0; day < duration_days; day++) {
-    const dueDate = new Date(start_date);
-    dueDate.setDate(dueDate.getDate() + day);
-
-    const isRevisionDay = (day + 1) % 3 === 0;
-
-    // 🔹 REVISION DAY
-    if (isRevisionDay) {
-      const revisionSet = completedTopics.slice(-5);
-
-      revisionSet.forEach(topic => {
-        tasks.push({
-          plan_id: plan.id,
-          topic_id: topic.id,
-          user_id: userId,
-          title: `Revision: ${topic.topic}`,
-          due_date: dueDate.toISOString(),
-          is_completed: false
-        });
-      });
-
-      continue;
+    if (currentDayMins + timeRequired > 180) {
+      currentDate.setDate(currentDate.getDate() + 1); // Move to next day
+      currentDayMins = 0;
     }
-
-    // 🔹 STUDY DAY
-    let usedCapacity = 0;
-
-    while (
-      topicQueue.length &&
-      usedCapacity + topicQueue[0].weight <= DAILY_CAPACITY
-    ) {
-      const topic = topicQueue.shift();
-
-      tasks.push({
-        plan_id: plan.id,
-        topic_id: topic.id,
-        user_id: userId,
-        title: topic.topic,
-        due_date: dueDate.toISOString(),
-        is_completed: false
-      });
-
-      usedCapacity += topic.weight;
-      completedTopics.push(topic);
-    }
-  }
-
-  // 🔥 HANDLE LEFTOVER TOPICS (auto-extend plan)
-  let extraDay = duration_days;
-
-  while (topicQueue.length) {
-    const dueDate = new Date(start_date);
-    dueDate.setDate(dueDate.getDate() + extraDay);
-
-    let usedCapacity = 0;
-
-    while (
-      topicQueue.length &&
-      usedCapacity + topicQueue[0].weight <= DAILY_CAPACITY
-    ) {
-      const topic = topicQueue.shift();
-
-      tasks.push({
-        plan_id: plan.id,
-        topic_id: topic.id,
-        user_id: userId,
-        title: topic.topic,
-        due_date: dueDate.toISOString(),
-        is_completed: false
-      });
-
-      usedCapacity += topic.weight;
-      completedTopics.push(topic);
-    }
-
-    extraDay++;
-  }
-
-  // 🔹 FINAL REVISION DAY
-  const finalDate = new Date(start_date);
-  finalDate.setDate(finalDate.getDate() + extraDay);
-
-  completedTopics.forEach(topic => {
-    tasks.push({
-      plan_id: plan.id,
+    
+    tasksToInsert.push({
+      plan_id,
       topic_id: topic.id,
-      user_id: userId,
-      title: `Final Revision: ${topic.topic}`,
-      due_date: finalDate.toISOString(),
-      is_completed: false
+      due_date: new Date(currentDate).toISOString(),
+      status: 'pending'
     });
-  });
+    
+    currentDayMins += timeRequired;
+  }
 
-  // 5. Insert tasks
-  const { error: tasksError } = await supabase
+  // 4. Insert Tasks
+  const { error: insertError } = await supabase
     .from('tasks')
-    .insert(tasks);
+    .insert(tasksToInsert);
 
-  if (tasksError) throw tasksError;
+  if (insertError) throw insertError;
 
-  return {
-    plan,
-    totalTopics: topics.length,
-    tasksCount: tasks.length,
-    extendedDays: extraDay
-  };
+  return { plan_id, total_tasks: tasksToInsert.length };
 };
 
-// 🔹 Shuffle helper
-function shuffle(arr) {
-  return arr.sort(() => Math.random() - 0.5);
-}
-
 module.exports = {
-  generateStudyPlan
+  createStudyPlan
 };

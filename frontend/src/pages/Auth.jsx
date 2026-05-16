@@ -49,17 +49,17 @@ export default function Auth() {
   };
 
   return (
-    <div className="w-full flex items-center justify-center min-h-[calc(100vh-140px)] px-4">
+    <div className="w-full flex items-center justify-center min-h-[calc(100vh-140px)] px-4 font-sans selection:bg-indigo-100">
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm bg-[#0f172a] border border-slate-800 rounded-3xl p-8 shadow-2xl"
+        className="w-full max-w-sm bg-white border border-gray-200 rounded-3xl p-8 shadow-xl"
       >
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold tracking-tight text-white mb-2">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">
             {isLogin ? "Welcome back" : "Create an account"}
           </h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-gray-500 font-medium">
             {isLogin ? "Enter your credentials to access your workspace." : "Enter your email below to initialize your planner."}
           </p>
         </div>
@@ -70,7 +70,7 @@ export default function Auth() {
               initial={{ opacity: 0, height: 0 }} 
               animate={{ opacity: 1, height: 'auto' }} 
               exit={{ opacity: 0, height: 0 }}
-              className="text-xs text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4"
+              className="text-sm font-medium text-red-600 bg-red-50 border border-red-100 rounded-xl p-3 mb-4"
             >
               {error}
             </motion.div>
@@ -80,32 +80,32 @@ export default function Auth() {
               initial={{ opacity: 0, height: 0 }} 
               animate={{ opacity: 1, height: 'auto' }} 
               exit={{ opacity: 0, height: 0 }}
-              className="text-xs text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 mb-4"
+              className="text-sm font-medium text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-xl p-3 mb-4"
             >
               {successMsg}
             </motion.div>
           )}
         </AnimatePresence>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-400 ml-1">Email</label>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Email</label>
             <input 
               type="email" 
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all placeholder-slate-500"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-[15px] text-gray-900 focus:outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all placeholder-gray-400 font-medium"
               placeholder="name@example.com"
               required
             />
           </div>
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-400 ml-1">Password</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Password</label>
             <input 
               type="password" 
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full bg-slate-800/50 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all placeholder-slate-500"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-[15px] text-gray-900 focus:outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all placeholder-gray-400 font-medium"
               placeholder="••••••••"
               required
             />
@@ -114,17 +114,17 @@ export default function Auth() {
           <button 
             type="submit"
             disabled={loading}
-            className="w-full mt-4 flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white font-medium text-sm px-4 py-3 rounded-xl transition-colors disabled:opacity-70 disabled:hover:bg-indigo-500"
+            className="w-full mt-6 flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white font-bold text-[15px] px-4 py-4 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:hover:bg-gray-900 disabled:shadow-none"
           >
             {loading ? "Authenticating..." : (isLogin ? "Sign In" : "Sign Up")}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-8 text-center">
           <button 
             type="button" 
             onClick={() => { setIsLogin(!isLogin); setError(""); setSuccessMsg(""); }}
-            className="text-xs text-slate-400 hover:text-white transition-colors"
+            className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
           >
             {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
           </button>

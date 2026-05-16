@@ -8,7 +8,7 @@ const rescheduleTasks = async (userId, planId) => {
     .select('*')
     .eq('user_id', userId)
     .eq('plan_id', planId)
-    .eq('is_completed', false)
+    .eq('status', 'pending')
     .order('due_date', { ascending: true });
 
   if (error) throw error;

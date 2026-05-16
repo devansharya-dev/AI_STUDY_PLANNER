@@ -1,298 +1,237 @@
-# AI Study Planner — Database Schema
+# 🚀 AI Study Planner
 
-This document defines the **database structure for the AI Study Planner application**.
-
-The database will be hosted on **Supabase (PostgreSQL)**.
-
-All tables, fields, and relationships must follow this schema exactly.
+An intelligent SaaS-based study planning system that converts raw syllabus input into a structured, optimized daily study plan.
 
 ---
 
-# 1. Tables Overview
+## 🧠 Overview
 
-The application will use the following tables:
+AI Study Planner allows users to input raw text (syllabus, goals, or learning plan) and automatically:
 
-users  
-syllabus  
-topics  
-study_plans  
-tasks  
+* Extracts topics
+* Generates a study plan
+* Distributes tasks across days
+* Tracks progress in real-time
 
----
-
-# 2. Users Table
-
-Table name:
-
-users
-
-Purpose:
-
-Stores application users.
-
-Columns:
-
-id  
-uuid  
-primary key  
-
-email  
-text  
-unique  
-
-name  
-text  
-
-created_at  
-timestamp  
-default current_timestamp
-
-Example:
-
-id | email | name | created_at
+This system is designed to simulate real-world productivity planning using backend-driven logic and AI-assisted parsing.
 
 ---
 
-# 3. Syllabus Table
+## ⚙️ Tech Stack
 
-Table name:
+### Backend
 
-syllabus
+* Node.js
+* Express.js
+* Supabase (PostgreSQL)
+* Supabase JS Client
 
-Purpose:
+### Frontend
 
-Stores syllabus uploaded by the user.
+* React.js (Vite)
+* Tailwind CSS
 
-Columns:
+### Tools & Integrations
 
-id  
-uuid  
-primary key  
-
-user_id  
-uuid  
-foreign key → users.id  
-
-title  
-text  
-
-content  
-text  
-
-created_at  
-timestamp  
-default current_timestamp
-
-Example:
-
-id | user_id | title | content | created_at
+* Zod (validation)
+* NodeMailer (email service)
+* n8n (automation workflows)
+* Cron Jobs (task scheduling)
 
 ---
 
-# 4. Topics Table
+## 🏗️ Architecture
 
-Table name:
+The backend follows a modular architecture:
 
-topics
-
-Purpose:
-
-Stores topics extracted from the syllabus.
-
-Columns:
-
-id  
-uuid  
-primary key  
-
-syllabus_id  
-uuid  
-foreign key → syllabus.id  
-
-topic_name  
-text  
-
-created_at  
-timestamp  
-default current_timestamp
-
-Example:
-
-id | syllabus_id | topic_name
+```
+controllers → handle request/response  
+services → business logic  
+routes → API endpoints  
+```
 
 ---
 
-# 5. Study Plans Table
+## 🗄️ Database Design
 
-Table name:
+### Key Tables
 
-study_plans
+#### `syllabus`
 
-Purpose:
+Stores user input
 
-Stores generated study plans.
+* id (UUID)
+* user_id (UUID)
+* title (TEXT)
+* content (TEXT)
 
-Columns:
+#### `topics`
 
-id  
-uuid  
-primary key  
+Extracted from syllabus
 
-user_id  
-uuid  
-foreign key → users.id  
+* id (UUID)
+* syllabus_id (UUID)
+* topic (TEXT)
+* difficulty (INT)
+* estimated_time (INT)
+* priority (INT)
 
-syllabus_id  
-uuid  
-foreign key → syllabus.id  
+#### `study_plans`
 
-exam_date  
-date  
+Generated plans
 
-total_days  
-integer  
+* id (UUID)
+* user_id (UUID)
+* syllabus_id (UUID)
+* exam_date (DATE)
+* total_days (INT)
 
-created_at  
-timestamp  
-default current_timestamp
+#### `tasks`
 
-Example:
+Daily scheduled tasks
 
-id | user_id | syllabus_id | exam_date | total_days
-
----
-
-# 6. Tasks Table
-
-Table name:
-
-tasks
-
-Purpose:
-
-Stores daily study tasks.
-
-Columns:
-
-id  
-uuid  
-primary key  
-
-plan_id  
-uuid  
-foreign key → study_plans.id  
-
-topic_id  
-uuid  
-foreign key → topics.id  
-
-task_date  
-date  
-
-completed  
-boolean  
-default false  
-
-created_at  
-timestamp  
-default current_timestamp
-
-Example:
-
-id | plan_id | topic_id | task_date | completed
+* id (UUID)
+* plan_id (UUID)
+* topic_id (UUID)
+* due_date (TIMESTAMP)
+* status (pending | completed | skipped)
+* completed_at (TIMESTAMP)
 
 ---
 
-# 7. Table Relationships
+## 🔐 Data Integrity & Constraints
 
-users
-  ↓
-syllabus
-  ↓
-topics
-  ↓
-study_plans
-  ↓
-tasks
-
-Relationship details:
-
-users.id → syllabus.user_id  
-
-syllabus.id → topics.syllabus_id  
-
-syllabus.id → study_plans.syllabus_id  
-
-study_plans.id → tasks.plan_id  
-
-topics.id → tasks.topic_id
+* UNIQUE(user_id, title) → prevents duplicate syllabus
+* UNIQUE(plan_id, topic_id, due_date) → prevents duplicate tasks
+* Foreign key relationships enforced
+* Row Level Security (RLS) supported
 
 ---
 
-# 8. Example Workflow
+## 🔄 Core Features
 
-User signs up.
+### 1. Raw Text Input → Structured Plan
 
-A record is created in users.
-
-User uploads syllabus.
-
-A record is stored in syllabus.
-
-AI extracts topics.
-
-Topics are stored in topics table.
-
-User generates study plan.
-
-A record is created in study_plans.
-
-Daily tasks are generated.
-
-Tasks are stored in tasks table.
-
-User marks tasks as completed.
-
-tasks.completed becomes true.
+Users can input plain text (no strict format required), and the system extracts topics automatically.
 
 ---
 
-# 9. Supabase Row Level Security (RLS)
+### 2. Smart Task Distribution
 
-Enable RLS for all tables.
+Tasks are distributed based on:
 
-Policies:
-
-Users can only access their own data.
-
-Example rule:
-
-user_id = auth.uid()
-
-Apply this rule for:
-
-syllabus  
-study_plans  
-tasks  
+* Estimated time per topic
+* Daily workload limits
+* Balanced scheduling
 
 ---
 
-# 10. Indexes
+### 3. Task Management
 
-Create indexes for faster queries.
-
-Index fields:
-
-user_id  
-syllabus_id  
-plan_id
-
-Example:
-
-CREATE INDEX idx_user_id ON syllabus(user_id);
-
-CREATE INDEX idx_plan_id ON tasks(plan_id);
+* Mark tasks as completed
+* Auto-update `completed_at`
+* Filter pending/completed tasks
 
 ---
 
-# End of Database Schema
+### 4. Supabase Integration
+
+* Relational queries using `.select()`
+* Secure data handling
+* Real-time ready architecture
+
+---
+
+## 📡 API Endpoints
+
+### GET `/tasks`
+
+Fetch tasks with filtering & pagination
+
+```
+/tasks?status=pending&page=1&limit=10
+```
+
+---
+
+### PATCH `/tasks/:id`
+
+Update task status
+
+```json
+{
+  "status": "completed"
+}
+```
+
+---
+
+### POST `/plans`
+
+Generate a study plan from syllabus
+
+---
+
+## 🧪 Testing
+
+Tested for:
+
+* Task filtering
+* Status updates
+* Duplicate prevention
+* Edge cases (invalid input, empty data)
+
+---
+
+## 🚧 Challenges Solved
+
+* Schema inconsistency between backend & DB
+* Supabase RLS policy errors
+* Duplicate constraint handling using UPSERT
+* Relational data fetching using Supabase joins
+
+---
+
+## 📈 Improvements Implemented
+
+* Replaced boolean `completed` with flexible `status` system
+* Introduced `completed_at` tracking
+* Added composite unique constraints
+* Normalized database relationships
+
+---
+
+## 🚀 Future Enhancements
+
+* Redis caching
+* Queue system (BullMQ)
+* AI-based difficulty adjustment
+* Personalized scheduling
+
+---
+
+## 🧠 Key Learnings
+
+* Real-world database design & constraints
+* Supabase RLS and security handling
+* Backend architecture design
+* Debugging schema mismatches
+
+---
+
+## 📌 Status
+
+✅ Backend stable
+✅ Database optimized
+✅ Core features working
+
+🚧 Improving scheduling intelligence
+
+---
+
+## 👨‍💻 Author
+
+Devansh Arya
+Full Stack Developer
+
+---

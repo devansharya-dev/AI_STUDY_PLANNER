@@ -30,7 +30,7 @@ async function getUserContext(userId) {
 
   const { data: tasks } = await supabase
     .from("tasks")
-    .select("title, is_completed, due_date")
+    .select("title, status, due_date")
     .eq("user_id", userId)
     .order("due_date", { ascending: true })
     .limit(10);
@@ -47,13 +47,13 @@ function getTodayTasks(tasks) {
   const today = new Date().toISOString().split("T")[0];
 
   return tasks.filter(
-    (t) => t.due_date?.startsWith(today) && !t.is_completed
+    (t) => t.due_date?.startsWith(today) && t.status === 'pending'
   );
 }
 
 function getProgress(tasks) {
   const total = tasks.length || 1;
-  const completed = tasks.filter((t) => t.is_completed).length;
+  const completed = tasks.filter((t) => t.status === 'completed').length;
 
   return {
     total,
@@ -84,7 +84,7 @@ function buildPrompt(history, context, message) {
   const topicsText = context.topics.map((t) => t.topic).join(", ");
 
   const tasksText = context.tasks
-    .map((t) => `${t.title} (${t.is_completed ? "done" : "pending"})`)
+    .map((t) => `${t.title} (${t.status})`)
     .join("\n");
 
   const progress = getProgress(context.tasks);

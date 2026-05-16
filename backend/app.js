@@ -51,6 +51,25 @@ app.use('/api/auth', authRoutes);
 app.use('/api/reschedule', rescheduleRoutes);
 app.use("/api/chat", chatRoutes);
 
+// Simple notification route for n8n integration
+const { sendEmail } = require('./services/emailService');
+app.post('/api/notify', async (req, res) => {
+  console.log("BODY:", req.body);
+  const { userId, message } = req.body;
+  
+  try {
+    await sendEmail({
+      to: process.env.EMAIL_USER, // sending to admin/default email since no DB lookup
+      subject: 'AI Study Planner Notification',
+      text: message || 'No message provided',
+    });
+  } catch (error) {
+    console.error("Error sending notification email:", error);
+  }
+
+  res.json({ success: true });
+});
+
 // Automation Routes
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/users", userRoutes);

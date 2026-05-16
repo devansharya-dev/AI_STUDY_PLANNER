@@ -1,50 +1,53 @@
 const supabase = require('../config/supabaseClient');
-const { parsePDF } = require('../utils/fileParser');
-const { extractTopics } = require('./aiService');
+const extractTopics = require('./aiService');
 
-const createSyllabusService = async (userId, syllabusData) => {
-  const { title, description, content, file } = syllabusData;
-  let finalContent = content || '';
-
-  // If file is provided, parse it
-  if (file) {
-    if (file.mimetype === 'application/pdf') {
-      finalContent = await parsePDF(file.buffer);
-    } else {
-      finalContent = file.buffer.toString('utf-8');
-    }
-  }
-
-  // Insert syllabus
+const upsertSyllabusService = async (userId, title, content) => {
+  // Use UPSERT for syllabus
   const { data: syllabus, error: syllabusError } = await supabase
     .from('syllabus')
-    .insert([{ title, description, content: finalContent, user_id: userId }])
+    .upsert(
+      {
+        user_id: userId,
+        title: title,
+        content: content
+      },
+      {
+        onConflict: "user_id,title"
+      }
+    )
     .select()
     .single();
 
   if (syllabusError) throw syllabusError;
 
   // AI Extraction of topics
-  const topics = await extractTopics(finalContent);
+  console.log("Calling AI...");
+  const topics = await extractTopics(content);
+  console.log("TOPICS:", topics);
 
-  // Insert topics
+  // Insert topics if we have them
+  // We can skip deleting old topics since the user didn't request it,
+  // but if needed, we'd delete them here.
   if (topics && topics.length > 0) {
     const topicsWithIds = topics.map(topicName => ({
       topic: topicName,
-      syllabus_id: syllabus.id,
-      user_id: userId
+      syllabus_id: syllabus.id
     }));
 
     const { error: topicsError } = await supabase
       .from('topics')
       .insert(topicsWithIds);
 
-    if (topicsError) throw topicsError;
+    if (topicsError) {
+      console.error("Topics insert error:", topicsError);
+      // Depending on strictness, we might throw or just log.
+      // throw topicsError;
+    }
   }
 
-  return { ...syllabus, topics };
+  return { syllabus_id: syllabus.id, topics };
 };
 
 module.exports = {
-  createSyllabus: createSyllabusService
+  upsertSyllabusService
 };

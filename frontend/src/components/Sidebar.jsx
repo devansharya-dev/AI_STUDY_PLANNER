@@ -12,8 +12,8 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="fixed left-0 md:left-auto top-[64px] w-64 h-[calc(100vh-64px)] hidden md:flex flex-col border-r border-white/[0.04] p-4 bg-transparent z-40">
-      <div className="text-[11px] text-zinc-500 font-semibold uppercase tracking-wider mb-4 mt-2 px-3">Workspace</div>
+    <aside className="fixed left-0 md:left-auto top-[64px] w-64 h-[calc(100vh-64px)] hidden md:flex flex-col border-r border-gray-200 p-4 bg-transparent z-40">
+      <div className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider mb-4 mt-2 px-3">Workspace</div>
 
       <div className="flex flex-col gap-1">
         {menu.map((item, idx) => {
@@ -24,11 +24,11 @@ export default function Sidebar() {
               to={item.path} 
               className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
                 isActive 
-                ? 'bg-white/10 text-white' 
-                : 'text-zinc-500 hover:text-white hover:bg-white/5'
+                ? 'bg-gray-100 text-gray-900 shadow-sm' 
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
-              <div className={`${isActive ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-300'}`}>
+              <div className={`${isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600'}`}>
                 {item.icon}
               </div>
               <span>{item.name}</span>
