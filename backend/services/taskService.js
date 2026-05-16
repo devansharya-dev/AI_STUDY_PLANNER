@@ -2,7 +2,7 @@ const supabase = require('../config/supabaseClient');
 
 const getTasks = async (userId, { status, page, limit }) => {
   const safePage = Number(page) || 1;
-  const safeLimit = Number(limit) || 10;
+  const safeLimit = Number(limit) || 50; // Increased default limit to see more tasks
 
   let query = supabase
     .from('tasks')
@@ -60,7 +60,50 @@ const updateTaskStatus = async (userId, id, status) => {
   return data;
 };
 
+const getPendingUsers = async () => {
+  const { data: incompleteTasks, error } = await supabase
+    .from('tasks')
+    .select('user_id')
+    .eq('status', 'pending');
+
+  if (error) {
+    console.error("SUPABASE ERROR:", error);
+    throw error;
+  }
+
+  if (!incompleteTasks || incompleteTasks.length === 0) return [];
+
+  const userCounts = incompleteTasks.reduce((acc, task) => {
+    acc[task.user_id] = (acc[task.user_id] || 0) + 1;
+    return acc;
+  }, {});
+
+  const userIds = Object.keys(userCounts);
+
+  const { data: profiles, error: profileError } = await supabase
+    .from('profiles')
+    .select('id, email')
+    .in('id', userIds);
+
+  if (profileError) {
+    console.error("SUPABASE ERROR:", profileError);
+    throw profileError;
+  }
+
+  const profileMap = (profiles || []).reduce((acc, p) => {
+    acc[p.id] = p.email;
+    return acc;
+  }, {});
+
+  return userIds.map(userId => ({
+    userId,
+    email: profileMap[userId] || 'unknown@example.com',
+    pendingCount: userCounts[userId]
+  }));
+};
+
 module.exports = {
   getTasks,
-  updateTaskStatus
+  updateTaskStatus,
+  getPendingUsers
 };

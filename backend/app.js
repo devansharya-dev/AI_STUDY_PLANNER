@@ -53,15 +53,19 @@ app.use("/api/chat", chatRoutes);
 
 // Simple notification route for n8n integration
 const { sendEmail } = require('./services/emailService');
+const { buildMessage } = require('./utils/buildMessage');
 app.post('/api/notify', async (req, res) => {
   console.log("BODY:", req.body);
-  const { userId, message } = req.body;
+  const { userId, message, type, data } = req.body;
   
+  // Use centralized message builder if type is provided, fallback to raw message
+  const notificationText = type ? buildMessage({ type, data }) : (message || 'No message provided');
+
   try {
     await sendEmail({
       to: process.env.EMAIL_USER, // sending to admin/default email since no DB lookup
       subject: 'AI Study Planner Notification',
-      text: message || 'No message provided',
+      text: notificationText,
     });
   } catch (error) {
     console.error("Error sending notification email:", error);

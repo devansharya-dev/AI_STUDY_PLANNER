@@ -47,25 +47,14 @@ const signup = async (req, res) => {
     await supabase.from('profiles').upsert([{ id: data.user.id, email }]);
 
 
-    // --- Send Welcome Email ---
-    const htmlBody = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #ddd; background-color: #fcfcfc;">
-        <h2 style="color: #111; font-family: 'Courier New', Courier, monospace; text-transform: uppercase;">Initialization Complete</h2>
-        <p>Hyy there!</p>
-        <p>Welcome to our portal. We are incredibly excited to have you onboard.</p>
-        <p>Your AI Study Planner is now ready to help you absolutely destroy procrastination. Log in now to spin up your very first optimized study queue.</p>
-        <br/>
-        <p>Stay focused,</p>
-        <p><strong>The AI Study Planner Team</strong></p>
-      </div>
-    `;
+    const { buildMessage } = require('../utils/buildMessage');
+    const notificationText = buildMessage({ type: 'WELCOME' });
 
     // Dispatch the welcome email non-blocking
     sendEmail({
       to: email,
       subject: 'Welcome to AI Study Planner 🚀',
-      text: 'Hyy there! Welcome to our portal. Login now to organize your queue!',
-      html: htmlBody
+      text: notificationText
     }).catch(err => console.error('Failed to send welcome email:', err));
     // ---------------------------
 

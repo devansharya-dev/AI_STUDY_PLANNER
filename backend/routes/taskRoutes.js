@@ -5,6 +5,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 const { validate } = require('../middleware/validate');
 const { getTasksSchema, updateTaskStatusSchema } = require('../validators');
 
+router.get('/pending', taskController.getPendingUsers);
 router.get('/', authMiddleware, validate(getTasksSchema), taskController.getTasks);
 router.patch('/:id', authMiddleware, validate(updateTaskStatusSchema), taskController.updateTaskStatus);
 

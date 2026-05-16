@@ -47,8 +47,19 @@ const getTasksForAutomation = async (req, res, next) => {
   }
 };
 
+const getPendingUsers = async (req, res, next) => {
+  try {
+    const users = await taskService.getPendingUsers();
+    return res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching pending users:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getTasks,
   updateTaskStatus,
-  getTasksForAutomation
+  getTasksForAutomation,
+  getPendingUsers
 };

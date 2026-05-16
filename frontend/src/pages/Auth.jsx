@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 export default function Auth() {
@@ -49,64 +49,64 @@ export default function Auth() {
   };
 
   return (
-    <div className="w-full flex items-center justify-center min-h-[calc(100vh-140px)] px-4 font-sans selection:bg-indigo-100">
-      <motion.div 
+    <div className="flex min-h-[calc(100dvh-132px)] w-full items-center justify-center px-1 selection:bg-[#d7b98d]/40">
+      <Motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm bg-white border border-gray-200 rounded-3xl p-8 shadow-xl"
+        className="premium-panel w-full max-w-sm rounded-2xl p-8"
       >
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">
+          <h1 className="font-heading text-4xl font-bold tracking-normal text-[#17140f]">
             {isLogin ? "Welcome back" : "Create an account"}
           </h1>
-          <p className="text-sm text-gray-500 font-medium">
+          <p className="mt-3 text-sm font-semibold leading-6 text-[#746b5f]">
             {isLogin ? "Enter your credentials to access your workspace." : "Enter your email below to initialize your planner."}
           </p>
         </div>
 
         <AnimatePresence mode="wait">
           {error && (
-            <motion.div 
+            <Motion.div 
               initial={{ opacity: 0, height: 0 }} 
               animate={{ opacity: 1, height: 'auto' }} 
               exit={{ opacity: 0, height: 0 }}
-              className="text-sm font-medium text-red-600 bg-red-50 border border-red-100 rounded-xl p-3 mb-4"
+              className="mb-4 rounded-xl border border-red-100 bg-red-50 p-3 text-sm font-bold text-red-600"
             >
               {error}
-            </motion.div>
+            </Motion.div>
           )}
           {successMsg && (
-            <motion.div 
+            <Motion.div 
               initial={{ opacity: 0, height: 0 }} 
               animate={{ opacity: 1, height: 'auto' }} 
               exit={{ opacity: 0, height: 0 }}
-              className="text-sm font-medium text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-xl p-3 mb-4"
+              className="mb-4 rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-sm font-bold text-emerald-700"
             >
               {successMsg}
-            </motion.div>
+            </Motion.div>
           )}
         </AnimatePresence>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Email</label>
+            <label className="ml-1 text-xs font-extrabold uppercase tracking-[0.16em] text-[#746b5f]">Email</label>
             <input 
               type="email" 
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-[15px] text-gray-900 focus:outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all placeholder-gray-400 font-medium"
+              className="w-full rounded-xl border border-[#5b3215]/10 bg-[#fffdf8] px-4 py-3.5 text-[15px] font-semibold text-[#17140f] transition-all placeholder:text-[#9b907f] focus:border-[#8a5a2b]/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#8a5a2b]/10"
               placeholder="name@example.com"
               required
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">Password</label>
+            <label className="ml-1 text-xs font-extrabold uppercase tracking-[0.16em] text-[#746b5f]">Password</label>
             <input 
               type="password" 
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-[15px] text-gray-900 focus:outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all placeholder-gray-400 font-medium"
-              placeholder="••••••••"
+              className="w-full rounded-xl border border-[#5b3215]/10 bg-[#fffdf8] px-4 py-3.5 text-[15px] font-semibold text-[#17140f] transition-all placeholder:text-[#9b907f] focus:border-[#8a5a2b]/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#8a5a2b]/10"
+              placeholder="Password"
               required
             />
           </div>
@@ -114,7 +114,7 @@ export default function Auth() {
           <button 
             type="submit"
             disabled={loading}
-            className="w-full mt-6 flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white font-bold text-[15px] px-4 py-4 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:hover:bg-gray-900 disabled:shadow-none"
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-[#17140f] px-4 py-4 text-[15px] font-extrabold text-[#fffaf1] shadow-[0_18px_35px_rgba(23,20,15,0.16)] transition-all hover:bg-[#5b3215] disabled:opacity-50 disabled:shadow-none"
           >
             {loading ? "Authenticating..." : (isLogin ? "Sign In" : "Sign Up")}
           </button>
@@ -124,12 +124,12 @@ export default function Auth() {
           <button 
             type="button" 
             onClick={() => { setIsLogin(!isLogin); setError(""); setSuccessMsg(""); }}
-            className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+            className="text-sm font-bold text-[#746b5f] transition-colors hover:text-[#17140f]"
           >
             {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
           </button>
         </div>
-      </motion.div>
+      </Motion.div>
     </div>
   );
 }

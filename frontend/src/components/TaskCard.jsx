@@ -1,9 +1,9 @@
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { Check } from "lucide-react";
 
 export default function TaskCard({ task, onToggle, index }) {
   return (
-    <motion.div 
+    <Motion.div 
         initial={{ opacity: 0, y: 5 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: index * 0.03 }}
@@ -28,6 +28,6 @@ export default function TaskCard({ task, onToggle, index }) {
           Pending
         </span>
       )}
-    </motion.div>
+    </Motion.div>
   );
 }

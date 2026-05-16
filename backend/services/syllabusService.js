@@ -26,9 +26,10 @@ const upsertSyllabusService = async (userId, title, content) => {
   console.log("TOPICS:", topics);
 
   // Insert topics if we have them
-  // We can skip deleting old topics since the user didn't request it,
-  // but if needed, we'd delete them here.
+  // We clear old topics first to prevent duplicates upon re-upload
   if (topics && topics.length > 0) {
+    await supabase.from('topics').delete().eq('syllabus_id', syllabus.id);
+
     const topicsWithIds = topics.map(topicName => ({
       topic: topicName,
       syllabus_id: syllabus.id

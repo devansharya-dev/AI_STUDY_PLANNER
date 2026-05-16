@@ -12,8 +12,8 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="fixed left-0 md:left-auto top-[64px] w-64 h-[calc(100vh-64px)] hidden md:flex flex-col border-r border-gray-200 p-4 bg-transparent z-40">
-      <div className="text-[11px] text-gray-500 font-semibold uppercase tracking-wider mb-4 mt-2 px-3">Workspace</div>
+    <aside className="fixed left-0 top-[72px] z-40 hidden h-[calc(100vh-72px)] w-64 flex-col border-r border-[#5b3215]/10 bg-[#fffaf1]/55 p-4 backdrop-blur-xl md:flex">
+      <div className="mb-4 mt-2 px-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#8a5a2b]">Workspace</div>
 
       <div className="flex flex-col gap-1">
         {menu.map((item, idx) => {
@@ -22,13 +22,13 @@ export default function Sidebar() {
             <Link 
               key={idx} 
               to={item.path} 
-              className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
+              className={`group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold transition-all ${
                 isActive 
-                ? 'bg-gray-100 text-gray-900 shadow-sm' 
-                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                ? 'bg-[#17140f] text-[#fffaf1] shadow-[0_14px_28px_rgba(23,20,15,0.14)]' 
+                : 'text-[#746b5f] hover:bg-[#efe1cc] hover:text-[#17140f]'
               }`}
             >
-              <div className={`${isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600'}`}>
+              <div className={`${isActive ? 'text-[#d7b98d]' : 'text-[#8a5a2b]'}`}>
                 {item.icon}
               </div>
               <span>{item.name}</span>

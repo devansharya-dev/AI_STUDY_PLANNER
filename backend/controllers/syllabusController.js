@@ -43,7 +43,7 @@ const createSyllabus = async (req, res) => {
 
     // Trigger n8n webhook
     try {
-      await axios.post("http://localhost:5678/webhook/syllabus-uploaded", {
+      await axios.post("http://localhost:5678/webhook-test/syllabus-uploaded", {
         userId: user_id,
         syllabusId: result.syllabus_id,
         topicCount: result.topics ? result.topics.length : 0

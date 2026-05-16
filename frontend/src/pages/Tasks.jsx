@@ -1,6 +1,6 @@
 import useTasks from "../hooks/useTasks";
 import { Check, Calendar } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 
 export default function Tasks() {
   const { tasks, toggle } = useTasks();
@@ -9,66 +9,67 @@ export default function Tasks() {
   const totalCount = tasks?.length || 0;
 
   return (
-    <motion.div 
+    <Motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.3 }}
-      className="w-full h-full font-sans selection:bg-indigo-100 flex flex-col"
+      className="mx-auto w-full max-w-5xl selection:bg-[#d7b98d]/40"
     >
-      <div className="shrink-0 mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-gray-200 pb-8">
+      <div className="mb-8 flex flex-col gap-6 border-b border-[#5b3215]/10 pb-8 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 mb-2">Your Queue</h1>
-          <p className="text-lg text-gray-500 font-medium">Daily activities and focused sessions.</p>
+          <p className="eyebrow mb-3">Daily work</p>
+          <h1 className="font-heading text-5xl font-bold tracking-normal text-[#17140f] md:text-6xl">Your Queue</h1>
+          <p className="mt-3 text-lg font-semibold text-[#746b5f]">Daily activities and focused sessions.</p>
         </div>
-        <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-white border border-gray-200 rounded-xl shadow-sm">
-          <Calendar size={18} className="text-indigo-500" />
-          <span className="text-gray-800 font-bold text-sm tracking-widest uppercase">
+        <div className="inline-flex items-center gap-3 rounded-full border border-[#8a5a2b]/15 bg-[#8a5a2b]/10 px-5 py-3 shadow-sm">
+          <Calendar size={18} className="text-[#8a5a2b]" />
+          <span className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#8a5a2b]">
             {completedCount} / {totalCount} Done
           </span>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto pb-12 pr-2 space-y-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div className="space-y-3 pb-12">
         <AnimatePresence>
           {tasks?.map((task) => (
-            <motion.div 
+            <Motion.div 
               key={task.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98 }}
               onClick={() => toggle(task.id, task.status === 'completed' ? 'pending' : 'completed')}
-              className={`group flex items-center justify-between border-2 rounded-2xl px-6 py-5 cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 ${
+              className={`group flex cursor-pointer items-center justify-between rounded-2xl border px-5 py-5 transition-all duration-300 ${
                 task.status === 'completed' 
-                  ? 'bg-gray-50 border-gray-100 opacity-60 hover:opacity-100' 
-                  : 'bg-white border-gray-200 hover:border-indigo-300'
+                  ? 'border-[#5b3215]/10 bg-[#efe1cc]/50 opacity-70 hover:opacity-100' 
+                  : 'premium-card hover:-translate-y-0.5 hover:border-[#8a5a2b]/30'
               }`}
             >
               <div className="flex items-center gap-6 w-full">
-                <div className={`w-7 h-7 shrink-0 rounded-lg border-2 flex items-center justify-center transition-colors duration-300 ${
+                <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition-all duration-300 ${
                   task.status === 'completed' 
-                    ? 'bg-indigo-500 border-indigo-500' 
-                    : 'border-gray-300 bg-gray-50 group-hover:border-indigo-400'
+                    ? 'border-[#60785f] bg-[#60785f]' 
+                    : 'border-[#8a5a2b]/25 bg-[#fffdf8] group-hover:border-[#8a5a2b]'
                 }`}>
-                  {task.status === 'completed' && <Check size={16} className="text-white" strokeWidth={4} />}
+                  {task.status === 'completed' && <Check size={16} className="text-[#fffaf1]" strokeWidth={4} />}
                 </div>
-                <span className={`text-lg md:text-xl font-semibold transition-all duration-300 ${
-                  task.status === 'completed' ? 'text-gray-400 line-through decoration-2' : 'text-gray-800'
+                <span className={`text-lg font-extrabold transition-all duration-300 md:text-xl ${
+                  task.status === 'completed' ? 'text-[#9b907f] line-through decoration-2' : 'text-[#31281f] group-hover:text-[#17140f]'
                 }`}>
                   {task.topic || "No Topic"}
                 </span>
               </div>
-            </motion.div>
+            </Motion.div>
           ))}
         </AnimatePresence>
         
         {(!tasks || tasks.length === 0) && (
-          <div className="flex flex-col items-center justify-center py-24 px-4 text-center bg-white rounded-3xl border-2 border-gray-200 border-dashed">
-              <p className="text-gray-500 text-xl font-bold mb-2">Your queue is empty.</p>
-              <p className="text-gray-400 text-base font-medium">Upload a new syllabus to automatically generate your tasks.</p>
+          <div className="premium-card flex flex-col items-center justify-center rounded-2xl border-dashed px-4 py-24 text-center">
+              <p className="mb-2 text-xl font-extrabold text-[#17140f]">Your queue is empty.</p>
+              <p className="text-base font-semibold text-[#746b5f]">Upload a new syllabus to automatically generate your tasks.</p>
           </div>
         )}
       </div>
-    </motion.div>
+    </Motion.div>
   );
 }

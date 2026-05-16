@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { streamChat } from "../services/chatService";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { SendHorizonal } from "lucide-react";
 
 export default function Chat() {
@@ -32,7 +32,7 @@ export default function Chat() {
           return updated;
         });
       });
-    } catch (err) {
+    } catch {
       setMessages(prev => {
         const updated = [...prev];
         updated[updated.length - 1].text = "Error: Connection failed.";
@@ -42,27 +42,28 @@ export default function Chat() {
   };
 
   return (
-    <motion.div 
+    <Motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.3 }}
-      className="max-w-3xl w-full mx-auto flex flex-col h-full font-sans selection:bg-indigo-100 pb-2"
+      className="mx-auto flex min-h-[calc(100dvh-132px)] w-full max-w-3xl flex-col selection:bg-[#d7b98d]/40"
     >
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-1">AI Assistant</h1>
-        <p className="text-sm text-gray-500 font-medium">Your personal study companion.</p>
+      <div className="mb-8 text-center">
+        <p className="eyebrow mb-3">Companion</p>
+        <h1 className="font-heading text-5xl font-bold tracking-normal text-[#17140f]">AI Assistant</h1>
+        <p className="mt-2 text-sm font-semibold text-[#746b5f]">Your personal study companion.</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto mb-6 pr-2 space-y-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div className="mb-6 flex-1 space-y-6 overflow-y-auto pr-2">
         {messages.length === 0 && (
-          <div className="flex items-center justify-center h-full text-gray-400 text-sm font-medium">
+          <div className="premium-card flex h-full min-h-64 items-center justify-center rounded-2xl text-sm font-bold text-[#746b5f]">
             How can I help you with your studies today?
           </div>
         )}
         <AnimatePresence>
           {messages.map((m, i) => (
-            <motion.div 
+            <Motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               key={i} 
@@ -71,13 +72,13 @@ export default function Chat() {
               <div 
                 className={`max-w-[85%] text-[15px] leading-relaxed px-5 py-3.5 rounded-2xl shadow-sm ${
                   m.role === 'user' 
-                  ? 'bg-gray-900 text-white rounded-br-sm' 
-                  : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm'
+                  ? 'bg-[#17140f] text-[#fffaf1] rounded-br-sm' 
+                  : 'bg-[#fffdf8] text-[#31281f] border border-[#5b3215]/10 rounded-bl-sm'
                 }`}
               >
                 {m.text}
               </div>
-            </motion.div>
+            </Motion.div>
           ))}
         </AnimatePresence>
         <div ref={bottomRef} />
@@ -85,22 +86,22 @@ export default function Chat() {
 
       <form 
         onSubmit={send} 
-        className="relative flex items-center bg-white border border-gray-200 hover:border-gray-300 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition-all rounded-2xl overflow-hidden shadow-sm p-1.5"
+        className="premium-panel relative flex items-center overflow-hidden rounded-2xl p-1.5 transition-all focus-within:border-[#8a5a2b]/40 focus-within:ring-4 focus-within:ring-[#8a5a2b]/10"
       >
         <input 
           value={input} 
           onChange={(e) => setInput(e.target.value)} 
           placeholder="Ask me anything..."
-          className="flex-1 bg-transparent border-none outline-none text-[15px] text-gray-900 placeholder-gray-400 py-3 pl-4 font-medium"
+          className="flex-1 border-none bg-transparent py-3 pl-4 text-[15px] font-semibold text-[#17140f] outline-none placeholder:text-[#9b907f]"
         />
         <button 
           type="submit" 
           disabled={!input.trim()}
-          className="bg-gray-900 text-white p-2.5 mr-1 rounded-xl hover:bg-gray-800 disabled:opacity-30 transition-colors shadow-sm"
+          className="mr-1 rounded-xl bg-[#17140f] p-2.5 text-[#fffaf1] shadow-sm transition-colors hover:bg-[#5b3215] disabled:opacity-30"
         >
           <SendHorizonal size={18} />
         </button>
       </form>
-    </motion.div>
+    </Motion.div>
   );
 }

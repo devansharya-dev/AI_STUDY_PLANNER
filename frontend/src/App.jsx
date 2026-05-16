@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import { useEffect } from "react";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 
@@ -22,6 +23,15 @@ function ProtectedRoute({ children }) {
 
 function AnimatedRoutes() {
   const location = useLocation();
+
+  useEffect(() => {
+    const scrollRoot = document.getElementById("app-scroll-root");
+    if (scrollRoot) {
+      scrollRoot.scrollTop = 0;
+      scrollRoot.scrollLeft = 0;
+    }
+  }, [location.pathname]);
+
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
@@ -38,16 +48,15 @@ function AnimatedRoutes() {
 
 function App() {
   return (
-    <div className="bg-[#FAFAFA] text-gray-900 h-screen w-full flex flex-col font-sans relative selection:bg-indigo-100 overflow-hidden">
-      {/* Immersive Background Glows for Light Mode */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-100/50 blur-[120px] pointer-events-none z-0"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] rounded-full bg-purple-100/50 blur-[120px] pointer-events-none z-0"></div>
-      
+    <div className="h-dvh w-full overflow-hidden bg-[#fffaf1] text-[#17140f] font-sans selection:bg-[#d7b98d]/40">
       <BrowserRouter>
         <Navbar />
-        <div className="flex flex-1 relative z-10 pt-[64px] h-full w-full overflow-hidden">
+        <div className="flex h-full w-full pt-[72px]">
           <Sidebar />
-          <main className="flex-1 md:pl-64 flex flex-col relative z-10 p-4 md:p-8 overflow-y-auto h-full scroll-smooth w-full">
+          <main
+            id="app-scroll-root"
+            className="flex-1 overflow-y-auto px-4 pb-8 pt-5 sm:px-6 md:pl-[18rem] md:pr-8 md:pt-8"
+          >
             <AnimatedRoutes />
           </main>
         </div>

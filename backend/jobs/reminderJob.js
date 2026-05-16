@@ -21,8 +21,7 @@ const sendDailyReminders = async () => {
       return;
     }
 
-    // Since we don't have an admin auth client to fetch user emails, 
-    // we'll simulate sorting by user_id and sending to a TEST_EMAIL or generic placeholder.
+   
     const tasksByUser = incompleteTasks.reduce((acc, task) => {
       acc[task.user_id] = acc[task.user_id] || [];
       acc[task.user_id].push(task);
@@ -32,23 +31,21 @@ const sendDailyReminders = async () => {
     const testEmail = process.env.TEST_EMAIL || 'test@example.com';
     let sentCount = 0;
 
+    const { buildMessage } = require('../utils/buildMessage');
+
     for (const [userId, tasks] of Object.entries(tasksByUser)) {
       // Create dynamically generated email content
       const subject = `You have ${tasks.length} pending tasks today in AI Study Planner`;
-      const htmlList = tasks.map(t => `<li>${t.title}</li>`).join('');
-      const htmlBody = `
-        <h3>System Priority Alert</h3>
-        <p>You have pending items in your queue. Please execute them to maintain progress:</p>
-        <ul>${htmlList}</ul>
-        <p>Stay focused!</p>
-      `;
+      
+      const notificationText = buildMessage({ 
+        type: 'DAILY_REMINDER', 
+        data: { pendingCount: tasks.length } 
+      });
 
-      // In production, we would map userId to an email here.
       const result = await sendEmail({
-        to: testEmail, // Mock mapping
+        to: testEmail,
         subject,
-        text: `You have ${tasks.length} pending tasks waiting to be executed.`,
-        html: htmlBody,
+        text: notificationText,
       });
 
       if (result.success) sentCount++;
