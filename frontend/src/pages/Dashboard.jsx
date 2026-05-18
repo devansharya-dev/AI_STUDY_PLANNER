@@ -1,28 +1,65 @@
 import { useEffect, useState } from "react";
 import { fetchTasks } from "../services/taskService";
+import { fetchDashboardStats } from "../services/dashboardService";
 import { motion as Motion } from "framer-motion";
-import { Activity, Target, Clock, CheckCircle2, ChevronRight, Zap } from "lucide-react";
+import { Activity, Target, Clock, CheckCircle2, ChevronRight, Zap, Flame, Trophy, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
+
+const StatCard = ({ icon, label, value, caption, tone, loading }) => (
+  <div className="premium-card rounded-2xl p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_48px_rgba(67,45,22,0.1)] md:p-6">
+    <div className="mb-5 flex items-center justify-between gap-4">
+      <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${tone}`}>
+        {icon}
+      </div>
+      {loading && (
+        <div className="h-2 w-14 overflow-hidden rounded-full bg-[#efe1cc]">
+          <div className="h-full w-1/2 animate-pulse rounded-full bg-[#c9b99f]" />
+        </div>
+      )}
+    </div>
+    <p className="eyebrow text-[#746b5f]">{label}</p>
+    {loading ? (
+      <div className="mt-4 h-10 w-20 animate-pulse rounded-lg bg-[#efe1cc]" />
+    ) : (
+      <p className="mt-2 text-4xl font-extrabold tracking-normal text-[#17140f]">{value}</p>
+    )}
+    <p className="mt-3 text-sm font-bold leading-6 text-[#746b5f]">{caption}</p>
+  </div>
+);
 
 export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await fetchTasks();
-        setTasks(data || []);
+        const [taskData, statsData] = await Promise.all([
+          fetchTasks(),
+          fetchDashboardStats(),
+        ]);
+        setTasks(taskData || []);
+        setStats(statsData || {});
       } catch {
         setTasks([]);
+        setStats({});
+      } finally {
+        setStatsLoading(false);
       }
     };
 
     load();
   }, []);
 
-  const completed = tasks.filter(t => t.status === 'completed').length;
-  const total = tasks.length || 1;
-  const percent = Math.round((completed / total) * 100);
+  const completed = stats?.completedTasks ?? tasks.filter(t => t.status === 'completed').length;
+  const totalTasks = stats?.totalTasks ?? tasks.length;
+  const total = totalTasks || 1;
+  const remaining = stats?.remainingTasks ?? tasks.length - completed;
+  const percent = stats?.progressPercentage ?? Math.round((completed / total) * 100);
+  const currentStreak = stats?.currentStreak ?? 0;
+  const longestStreak = stats?.longestStreak ?? 0;
+  const pendingTasks = stats?.pendingTasks ?? remaining;
 
   return (
     <Motion.div 
@@ -55,6 +92,46 @@ export default function Dashboard() {
       </Motion.div>
 
       <div className="pb-12">
+        <Motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05, duration: 0.5 }}
+          className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+        >
+          <StatCard
+            icon={<Flame size={22} strokeWidth={2.3} />}
+            label="Current Streak"
+            value={`${currentStreak}d`}
+            caption="Active days of completed study work."
+            tone="bg-[#f4e5d0] text-[#8a5a2b]"
+            loading={statsLoading}
+          />
+          <StatCard
+            icon={<Trophy size={22} strokeWidth={2.3} />}
+            label="Longest Streak"
+            value={`${longestStreak}d`}
+            caption="Your best consistency run so far."
+            tone="bg-[#efe1cc] text-[#5b3215]"
+            loading={statsLoading}
+          />
+          <StatCard
+            icon={<CheckCircle2 size={22} strokeWidth={2.3} />}
+            label="Tasks Completed"
+            value={completed}
+            caption="Total objectives finished across plans."
+            tone="bg-[#e5ebdf] text-[#60785f]"
+            loading={statsLoading}
+          />
+          <StatCard
+            icon={<BookOpen size={22} strokeWidth={2.3} />}
+            label="Pending Tasks"
+            value={pendingTasks}
+            caption="Unfinished study tasks in your queue."
+            tone="bg-[#edf0e7] text-[#4f674f]"
+            loading={statsLoading}
+          />
+        </Motion.div>
+
         <Motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -105,10 +182,10 @@ export default function Dashboard() {
                 </div>
                 
                 <div className="flex items-baseline gap-4">
-                  <span className="text-7xl font-extrabold tracking-tight text-[#fffaf1] md:text-8xl">{tasks.length - completed}</span>
+                  <span className="text-7xl font-extrabold tracking-tight text-[#fffaf1] md:text-8xl">{remaining}</span>
                   <span className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#b6a58c]">Remaining</span>
                 </div>
-                <p className="mt-4 text-lg font-semibold text-[#c9b99f]">Out of {tasks.length} total objectives generated by AI.</p>
+                <p className="mt-4 text-lg font-semibold text-[#c9b99f]">Out of {totalTasks} total objectives generated by AI.</p>
               </div>
               
               <Link to="/tasks" className="mt-8 inline-flex self-start items-center gap-2 rounded-full bg-[#fffaf1] px-6 py-3 text-sm font-extrabold text-[#17140f] transition-colors hover:bg-[#efe1cc]">

@@ -1,6 +1,6 @@
 const pdfParse = require("pdf-parse");
 const { createSyllabusSchema } = require("../validators");
-const { upsertSyllabusService } = require("../services/syllabusService");
+const { upsertSyllabusService, getSyllabusAnalyticsService } = require("../services/syllabusService");
 const axios = require("axios");
 
 const createSyllabus = async (req, res) => {
@@ -67,6 +67,26 @@ const createSyllabus = async (req, res) => {
   }
 };
 
+const getSyllabusAnalytics = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (!userId) {
+      return res.status(400).json({ error: "userId is required" });
+    }
+
+    const analyticsData = await getSyllabusAnalyticsService(userId);
+    
+    res.json(analyticsData);
+  } catch (err) {
+    console.error("ERROR in getSyllabusAnalytics:", err);
+    res.status(500).json({
+      error: err.message,
+    });
+  }
+};
+
 module.exports = {
   createSyllabus,
+  getSyllabusAnalytics
 };

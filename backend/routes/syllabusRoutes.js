@@ -11,4 +11,6 @@ const upload = multer({
 
 router.post('/', authMiddleware, upload.single('file'), syllabusController.createSyllabus);
 
+router.get('/analytics/:userId', syllabusController.getSyllabusAnalytics);
+
 module.exports = router;

@@ -4,7 +4,7 @@ const buildMessage = ({ type, data }) => {
       return `Your syllabus has been analyzed successfully.\n\nWe identified ${data?.topicCount || 'multiple'} study topics and generated your personalized study roadmap.\n\nYou can now begin organizing your sessions and tracking your learning progress inside AI Study Planner.`;
 
     case 'DAILY_REMINDER':
-      return `It's time to dive in.\n\nYou have ${data?.pendingCount || 'a few'} pending tasks curated for your study session today. Consistent daily action is the secret to mastery.\n\nLog in now to review your queue and make today count.`;
+      return `Hi ${data?.userName || 'Student'},\n\nYou currently have ${data?.pendingCount || 0} pending study tasks remaining today.\n\nYour highest pending workload is in ${data?.highestSubject || 'your subjects'}, so focus there first before moving to smaller subjects.\n\nYou completed ${data?.completedYesterday || 0} tasks yesterday — keep that momentum going and try not to break your consistency streak.\n\nConsistent daily progress beats last-minute cramming every time.`;
 
     case 'STREAK_ALERT':
       return `Incredible momentum!\n\nYou've maintained a focused study streak for ${data?.streakDays || 0} consecutive days. Your dedication to your learning goals is truly setting you apart.\n\nKeep pushing your boundaries. We're here to optimize the rest of your journey.`;

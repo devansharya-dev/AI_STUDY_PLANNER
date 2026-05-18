@@ -6,10 +6,10 @@ const sendDailyReminders = async () => {
   logger.info('Starting daily reminder job...');
   
   try {
-    // 1. Fetch incomplete tasks
+    // 1. Fetch incomplete tasks with topics
     const { data: incompleteTasks, error } = await supabase
       .from('tasks')
-      .select('*')
+      .select('*, topics(topic)')
       .eq('status', 'pending');
 
     if (error) {
@@ -21,10 +21,45 @@ const sendDailyReminders = async () => {
       return;
     }
 
-   
     const tasksByUser = incompleteTasks.reduce((acc, task) => {
+      if (!task.user_id) return acc;
       acc[task.user_id] = acc[task.user_id] || [];
       acc[task.user_id].push(task);
+      return acc;
+    }, {});
+
+    const userIds = Object.keys(tasksByUser);
+
+    // 2. Fetch user profiles for names
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .in('id', userIds);
+      
+    const profileMap = (profiles || []).reduce((acc, p) => {
+      acc[p.id] = p.email;
+      return acc;
+    }, {});
+
+    // 3. Fetch completed tasks from yesterday
+    const yesterdayStart = new Date();
+    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+    yesterdayStart.setHours(0, 0, 0, 0);
+
+    const yesterdayEnd = new Date();
+    yesterdayEnd.setDate(yesterdayEnd.getDate() - 1);
+    yesterdayEnd.setHours(23, 59, 59, 999);
+
+    const { data: yesterdayTasks } = await supabase
+      .from('tasks')
+      .select('user_id')
+      .eq('status', 'completed')
+      .gte('completed_at', yesterdayStart.toISOString())
+      .lte('completed_at', yesterdayEnd.toISOString())
+      .in('user_id', userIds);
+
+    const completedYesterdayByUser = (yesterdayTasks || []).reduce((acc, task) => {
+      acc[task.user_id] = (acc[task.user_id] || 0) + 1;
       return acc;
     }, {});
 
@@ -34,12 +69,38 @@ const sendDailyReminders = async () => {
     const { buildMessage } = require('../utils/buildMessage');
 
     for (const [userId, tasks] of Object.entries(tasksByUser)) {
-      // Create dynamically generated email content
+      // Calculate highest subject
+      const subjectCounts = tasks.reduce((acc, task) => {
+        const subject = task.topics?.topic || 'General';
+        acc[subject] = (acc[subject] || 0) + 1;
+        return acc;
+      }, {});
+      
+      let highestSubject = 'General';
+      let maxCount = 0;
+      for (const [subj, count] of Object.entries(subjectCounts)) {
+        if (count > maxCount) {
+          maxCount = count;
+          highestSubject = subj;
+        }
+      }
+
+      const email = profileMap[userId] || 'student@example.com';
+      const rawName = email.split('@')[0];
+      const userName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+
+      const completedYesterday = completedYesterdayByUser[userId] || 0;
+
       const subject = `You have ${tasks.length} pending tasks today in AI Study Planner`;
       
       const notificationText = buildMessage({ 
         type: 'DAILY_REMINDER', 
-        data: { pendingCount: tasks.length } 
+        data: { 
+          userName,
+          pendingCount: tasks.length,
+          highestSubject,
+          completedYesterday
+        } 
       });
 
       const result = await sendEmail({

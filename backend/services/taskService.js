@@ -1,4 +1,5 @@
 const supabase = require('../config/supabaseClient');
+const axios = require('axios');
 
 const getTasks = async (userId, { status, page, limit }) => {
   const safePage = Number(page) || 1;
@@ -12,8 +13,12 @@ const getTasks = async (userId, { status, page, limit }) => {
       status,
       topics!inner (
         topic
+      ),
+      study_plans!inner (
+        user_id
       )
     `)
+    .eq('study_plans.user_id', userId)
     .order('due_date', { ascending: true })
     .range((safePage - 1) * safeLimit, safePage * safeLimit - 1);
 
@@ -57,6 +62,96 @@ const updateTaskStatus = async (userId, id, status) => {
     console.error("SUPABASE ERROR:", error);
     throw error;
   }
+
+  // Handle streak logic if task is completed
+  if (status === 'completed' && userId) {
+    try {
+      const { data: stats } = await supabase
+        .from('user_stats')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      
+      let current_streak = 1;
+      let longest_streak = 1;
+      let total_completed_tasks = 1;
+      let last_completed_date = todayStr;
+
+      let milestoneHit = false;
+
+      if (stats) {
+        total_completed_tasks = (stats.total_completed_tasks || 0) + 1;
+        current_streak = stats.current_streak || 0;
+        longest_streak = stats.longest_streak || 0;
+        last_completed_date = stats.last_completed_date;
+
+        if (last_completed_date !== todayStr) {
+          if (last_completed_date) {
+            const d1 = new Date(last_completed_date);
+            const d2 = new Date(todayStr);
+            const diffDays = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 1) {
+              current_streak += 1;
+              longest_streak = Math.max(longest_streak, current_streak);
+            } else if (diffDays > 1) {
+              current_streak = 1;
+            }
+          } else {
+            current_streak = 1;
+            longest_streak = Math.max(longest_streak, current_streak);
+          }
+          last_completed_date = todayStr;
+
+          const milestones = [3, 7, 14, 30];
+          if (milestones.includes(current_streak)) {
+            milestoneHit = true;
+          }
+        } else {
+          // Already completed a task today, streak remains the same
+          longest_streak = Math.max(longest_streak, current_streak);
+        }
+      }
+
+      await supabase.from('user_stats').upsert({
+        user_id: userId,
+        current_streak,
+        longest_streak,
+        total_completed_tasks,
+        last_completed_date
+      });
+
+      if (milestoneHit) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', userId)
+          .maybeSingle();
+
+        let name = 'Student';
+        if (profile && profile.email) {
+          const rawName = profile.email.split('@')[0];
+          name = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+        }
+
+        try {
+          await axios.post('http://localhost:5678/webhook/streak-achievement', {
+            userId,
+            name,
+            streak: current_streak
+          });
+        } catch (webhookErr) {
+          console.error("Webhook trigger failed:", webhookErr.message);
+        }
+      }
+    } catch (streakError) {
+      console.error("Error updating streaks:", streakError);
+    }
+  }
+
   return data;
 };
 
@@ -74,30 +169,14 @@ const getPendingUsers = async () => {
   if (!incompleteTasks || incompleteTasks.length === 0) return [];
 
   const userCounts = incompleteTasks.reduce((acc, task) => {
-    acc[task.user_id] = (acc[task.user_id] || 0) + 1;
+    if (task.user_id) {
+      acc[task.user_id] = (acc[task.user_id] || 0) + 1;
+    }
     return acc;
   }, {});
 
-  const userIds = Object.keys(userCounts);
-
-  const { data: profiles, error: profileError } = await supabase
-    .from('profiles')
-    .select('id, email')
-    .in('id', userIds);
-
-  if (profileError) {
-    console.error("SUPABASE ERROR:", profileError);
-    throw profileError;
-  }
-
-  const profileMap = (profiles || []).reduce((acc, p) => {
-    acc[p.id] = p.email;
-    return acc;
-  }, {});
-
-  return userIds.map(userId => ({
+  return Object.keys(userCounts).map(userId => ({
     userId,
-    email: profileMap[userId] || 'unknown@example.com',
     pendingCount: userCounts[userId]
   }));
 };
