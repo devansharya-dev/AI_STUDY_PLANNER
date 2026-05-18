@@ -77,6 +77,7 @@ app.post('/api/notify', async (req, res) => {
 // Automation Routes
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/users", userRoutes);
+app.use("/api/users", userRoutes); // support new endpoint requested
 app.use("/api/v1/tasks", taskRoutes.automationRouter);
 
 // 404 handler
